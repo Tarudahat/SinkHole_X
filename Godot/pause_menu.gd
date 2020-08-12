@@ -11,5 +11,5 @@ func _process(_delta):
 		get_tree().change_scene("res://title_menu.tscn")
 	elif button_continue.pressed==true:
 		get_parent().visible=false
-		get_tree().paused=false
+		get_tree().paused=false#
 		
