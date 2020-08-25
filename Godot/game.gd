@@ -3,11 +3,15 @@ extends Node2D
 #player, enemies and maps
 onready var player= get_node("player/player")
 onready var enemies= get_node("enemies")
-onready var enemies_used = false
+onready var enemy_types = 3
+onready var enemy_used = [TYPE_BOOL]
 onready var map= preload("res://map.tscn")
 onready var map2= preload("res://map2.tscn") 
 onready var map3= preload("res://map3.tscn") 
+
 onready var enemy= preload("res://enemy.tscn")
+onready var snow_enemy= preload("res://snow_enemy.tscn")
+onready var ball= preload("res://ball.tscn")
 
 #pause menu things
 onready var pause_menu= preload("res://pause_menu.tscn").instance()
@@ -15,7 +19,7 @@ onready var pause_menu= preload("res://pause_menu.tscn").instance()
 #level selection/diff.
 onready var map_current= Node
 onready var difficulty= SceneGlobals.difficulty # 1=easy 2=normal 3=hard 4=impossible 
-onready var level = SceneGlobals.level # 0=plains (OG) 1=Highway
+onready var level = SceneGlobals.level # 0=plains (OG) 1=Highway 2=Snow field
 
 onready var map_object_layer= Node
 onready var scorecounter= get_node("GUI/scorecounter")
@@ -46,8 +50,11 @@ onready var stuck_position = Vector2(0,0)
 func get_rnd_vector2D(str_):
 	random_x= round(rand_range(0.0,19))
 	random_y= round(rand_range(0.0,11))
+
 	if str_=="player":
 		return Vector2(random_x*64+32,random_y*64+32)
+	elif str_=="snow_man":
+		return Vector2(round(rand_range(0.0,18)),round(rand_range(2.0,10)))
 	else:
 		return Vector2(random_x,random_y)
 
@@ -64,39 +71,68 @@ func spawn_hole():
 		spawn_hole()
 	map_object_layer.set_cell(hole_position.x, hole_position.y, 0)
 	
-func spawn_car_enemy(direction_,enemy_x_,enemy_y_):
-	var new_enemy=enemy.instance()
-	enemies.add_child(new_enemy)
-	new_enemy.rotation_degrees=90
-	new_enemy.enemy_direction=direction_
-	if direction_==-1:
-		new_enemy.rotation_degrees=270
-	new_enemy.position=Vector2(enemy_x_*64+32,enemy_y_*64+32)
+func spawn_enemy(enemy_index,direction_,enemy_x_,enemy_y_):
+	if enemy_index==0:
+		var new_enemy=enemy.instance()
+		enemies.add_child(new_enemy)
+		new_enemy.rotation_degrees=90
+		new_enemy.enemy_direction=direction_
+		if direction_==-1:
+			new_enemy.rotation_degrees=270
+		new_enemy.position=Vector2(enemy_x_*64+32,enemy_y_*64+32)
+		new_enemy.enemy_type=0
+	elif enemy_index==1:
+		var new_enemy=snow_enemy.instance()
+		enemies.add_child(new_enemy)
+		new_enemy.position=Vector2(enemy_x_*64+32,enemy_y_*64+32)
+		new_enemy.enemy_type=1
+		
+		var new_ball=ball.instance()
+		enemies.add_child(new_ball)
+		new_ball.position=Vector2(200*64+32,200*64+32)
+		new_ball.enemy_type=2
+		new_ball.parent_node=new_enemy
+
 	
-func spawn_enemies(enemy_type):
-	if enemy_type==0:
-		for i in range(round(get_rnd_vector2D("").y/PI)+9):
-			if get_rnd_vector2D("").x>12 or i<5:
-				var rnd_=[round(get_rnd_vector2D("").y/1.755),round(get_rnd_vector2D("").y/7.81),round(get_rnd_vector2D("").x/PI),round(get_rnd_vector2D("").y*2.1876)]
-				illegal_positions.append(rnd_)
-				for rnd__ in rnd_:
-					illegal_positions.append(rnd__+1)
-					illegal_positions.append(rnd__-1)
-				if !rnd_[0] in illegal_positions:
-					 spawn_car_enemy(-1,rnd_[0],8)
-				if !rnd_[1] in illegal_positions:
-					 spawn_car_enemy(1,rnd_[1],1)
-				if get_rnd_vector2D("").x>15 or i<7:
-					if !rnd_[2] in illegal_positions:
-						spawn_car_enemy(-1,rnd_[2],10)
-					if !rnd_[3] in illegal_positions:
-						spawn_car_enemy(1,rnd_[3],3)
-		if enemies.get_child_count()<=4:
-			spawn_enemies(0)
+func spawn_enemies(redo_):
+	if enemy_used[0]==true:
+		if enemy_used[1]==true or redo_==true:
+			for i in range(round(get_rnd_vector2D("").y/PI)+9):
+				if get_rnd_vector2D("").x>12 or i<5:
+					var rnd_=[round(get_rnd_vector2D("").y/1.755),round(get_rnd_vector2D("").y/7.81),round(get_rnd_vector2D("").x/PI),round(get_rnd_vector2D("").y*2.1876)]
+					illegal_positions.append(rnd_)
+					for rnd__ in rnd_:
+						illegal_positions.append(rnd__+1)
+						illegal_positions.append(rnd__-1)
+					if !rnd_[0] in illegal_positions:
+						spawn_enemy(0,-1,rnd_[0],8)
+					if !rnd_[1] in illegal_positions:
+						spawn_enemy(0,1,rnd_[1],1)
+					if get_rnd_vector2D("").x>15 or i<7:
+						if !rnd_[2] in illegal_positions:
+							spawn_enemy(0,-1,rnd_[2],10)
+						if !rnd_[3] in illegal_positions:
+							spawn_enemy(0,1,rnd_[3],3)
+			if enemies.get_child_count()<=5:
+				spawn_enemies(true)
+		if enemy_used[2]==true and redo_==false:
+			for _i in range(round(rand_range(3,4))):
+				hole_position=get_rnd_vector2D("snow_man")
+				spawn_enemy(1,-1,hole_position.x,hole_position.y)
+
+
 
 func get_enemy_collision():
 	for enemy_ in enemies.get_children():
-		update_car_enemy(enemy_)
+		#update enemies here
+		if enemy_used[1]==true and enemy_.enemy_type==0:
+			update_car_enemy(enemy_)
+
+		if enemy_used[2]==true and enemy_.enemy_type==1:
+			map_object_layer.set_cell(enemy_.position.x/64, enemy_.position.y/64, -1)
+		if enemy_used[3]==true and enemy_.enemy_type==2:
+			update_snow_ball_enemy(enemy_)
+
 		if enemy_.collided_with_player == true:
 			player.player_state=1
 
@@ -112,6 +148,37 @@ func update_car_enemy(enemy_):
 		enemy_.position.y+=7*64
 	map_object_layer.set_cell(enemy_.position.x/64, enemy_.position.y/64, -1)
 	
+func update_snow_ball_enemy(enemy_):
+	enemy_.rotation+=1+difficulty
+
+	if enemy_.position==enemy_.ball_target or enemy_.moves>=165:
+		enemy_.position.x=200*64
+		enemy_.can_spawn=true
+		enemy_.moves=0
+
+	if round(rand_range(1,120))>115 and enemy_.can_spawn==true:
+		enemy_.position=enemy_.parent_node.position
+		enemy_.ball_target=Vector2(player.player_x,player.player_y)
+		enemy_.can_spawn=false
+		
+	hole_position=enemy_.position
+	if enemy_.ball_target.x>enemy_.position.x:
+		enemy_.position.x+=2+difficulty
+		enemy_.moves+=1
+	if enemy_.ball_target.x<enemy_.position.x:
+		enemy_.position.x-=2+difficulty
+		enemy_.moves+=1
+	if enemy_.ball_target.y>enemy_.position.y:
+		enemy_.position.y+=2+difficulty
+		enemy_.moves+=1
+	if enemy_.ball_target.y<enemy_.position.y:
+		enemy_.position.y-=2+difficulty
+		enemy_.moves+=1
+
+	if hole_position==enemy_.position:
+		enemy_.position=enemy_.ball_target
+	
+
 
 func update_holes(map_):
 	for dummy_1 in range(20):
@@ -173,7 +240,7 @@ func do_physics():
 		elif get_colider(map_object_layer)==8:
 			player.score+=10000
 			replace_item(map_object_layer,8,-1)
-	if enemies_used==true:
+	if enemy_used[0]==true:
 		get_enemy_collision()
 
 	
@@ -203,22 +270,36 @@ func game_over():
 
 func _ready():
 	game_over_screen.visible = false
+	
+	for _i in enemy_types:
+		enemy_used.append(false)
 
 	gen_map(level)
+	spawn_enemies(false)
 	spawn_player()
 	self.add_child(pause_menu)
 	
 func gen_map(map_index):
+	enemy_used[0]=true
 	if map_index==0:
+		enemy_used[0]=false
 		map_current=map.instance()
 	elif map_index==1:
 		map_current=map2.instance()
 		scorecounter.set("custom_colors/font_color", Color8(25,50,220,255))
-		enemies_used=true
-		spawn_enemies(0)
+		enemy_used[1]=true
+
 	elif map_index==2:
 		map_current=map3.instance()
 		scorecounter.set("custom_colors/font_color", Color8(25,50,220,255))
+		enemy_used[2]=true
+		enemy_used[3]=true
+
+	elif map_index==5:
+		map_current=map.instance()
+		enemy_used[1]=true
+		enemy_used[2]=true
+		enemy_used[3]=true
 		
 
 	self.add_child(map_current)
@@ -227,7 +308,7 @@ func gen_map(map_index):
 	gen_props(map_current,level)
 	
 func gen_props(map_,map_index):
-	if map_index==0:
+	if map_index==0 or map_index==5:
 		add_object(map_,"grass")
 
 
@@ -283,6 +364,7 @@ func _process(_delta):
 
 func _input(event):
 	if game_over_==true:
+		
 		if event is InputEventMouseButton:
 			# warning-ignore:return_value_discarded
 			get_tree().change_scene("res://game.tscn")

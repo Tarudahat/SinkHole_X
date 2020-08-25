@@ -7,13 +7,16 @@ onready var thumbnail = get_node("background/thumbnail")
 onready var level_name = get_node("background/level_name")
 onready var selected_level=0
 onready var change_info=false
-onready var levels=["Plains","Highway","???","???","Random","???"]
+onready var levels=["Plains","Highway","Snow field","Volcano","Random","Custom"]
+
+onready var done = false
 
 func _process(_delta):
-	if button_left.pressed==true or Input.is_action_pressed("in_left"):
+
+	if button_left.pressed==true or Input.is_action_just_released("in_left")==true:
 		selected_level-=1
 		change_info=true
-	elif button_right.pressed==true or Input.is_action_pressed("in_right"):
+	elif button_right.pressed==true or Input.is_action_just_released("in_right")==true:
 		selected_level+=1
 		change_info=true	
 
@@ -28,11 +31,20 @@ func _process(_delta):
 		change_info=false
 		OS.delay_msec(175)
 
-	if button_ok.pressed==true or Input.is_action_pressed("ui_accept"):
+	
+	if button_ok.pressed==true:
+		done=true
+	elif Input.is_action_just_released("ui_accept")==true:
+		done=true
+
+	if done==true:
+		print(selected_level)
 		SceneGlobals.level=selected_level
 		if levels[selected_level]=="Random":
-			SceneGlobals.level=round(rand_range(0.8,1.8))-1
+			SceneGlobals.level=abs(round(rand_range(-0.7,3)))
 		# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://diff_menu.tscn")
+
+
 		
 	
