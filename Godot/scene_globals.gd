@@ -1,4 +1,4 @@
 extends Node2D
 
-onready var level =-1
-onready var difficulty =-1
+onready var level =0
+onready var difficulty =0

@@ -27,7 +27,7 @@ func _process(_delta):
 		change_info=false
 		OS.delay_msec(175)
 
-	if button_ok.pressed==true or Input.is_action_pressed("ui_accept"):
+	if button_ok.pressed==true:
 		SceneGlobals.difficulty=selected_diff+1
 		# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://game.tscn")

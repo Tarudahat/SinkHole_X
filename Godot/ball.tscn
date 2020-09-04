@@ -4,7 +4,7 @@
 [ext_resource path="res://assets/snow_ball.png" type="Texture" id=2]
 
 [sub_resource type="CircleShape2D" id=1]
-radius = 20.4888
+radius = 16.6855
 
 [node name="enemy" type="Area2D"]
 script = ExtResource( 1 )

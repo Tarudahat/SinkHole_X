@@ -33,12 +33,6 @@ func _process(_delta):
 
 	
 	if button_ok.pressed==true:
-		done=true
-	elif Input.is_action_just_released("ui_accept")==true:
-		done=true
-
-	if done==true:
-		print(selected_level)
 		SceneGlobals.level=selected_level
 		if levels[selected_level]=="Random":
 			SceneGlobals.level=abs(round(rand_range(-0.7,3)))
