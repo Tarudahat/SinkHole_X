@@ -91,7 +91,7 @@ func spawn_enemy(enemy_index,direction_,enemy_x_,enemy_y_):
 		enemies.add_child(new_ball)
 		new_ball.position=Vector2(200*64+32,200*64+32)
 		new_ball.enemy_type=2
-		new_ball.parent_node=new_enemy
+		new_ball.linked_node=new_enemy
 
 	
 func spawn_enemies(redo_):
@@ -151,32 +151,32 @@ func update_car_enemy(enemy_):
 func update_snow_ball_enemy(enemy_):
 	enemy_.rotation+=1+difficulty
 
-	if enemy_.position==enemy_.ball_target or enemy_.moves>=165:
+	if enemy_.position==enemy_.target or enemy_.moves>=165:
 		enemy_.position.x=200*64
 		enemy_.can_spawn=true
 		enemy_.moves=0
 
 	if round(rand_range(1,120))>115 and enemy_.can_spawn==true:
-		enemy_.position=enemy_.parent_node.position
-		enemy_.ball_target=Vector2(player.player_x,player.player_y)
+		enemy_.position=enemy_.linked_node.position
+		enemy_.target=Vector2(player.player_x,player.player_y)
 		enemy_.can_spawn=false
 		
 	hole_position=enemy_.position
-	if enemy_.ball_target.x>enemy_.position.x:
-		enemy_.position.x+=2+difficulty
+	if enemy_.target.x>enemy_.position.x:
+		enemy_.position.x+=1+difficulty
 		enemy_.moves+=1
-	if enemy_.ball_target.x<enemy_.position.x:
-		enemy_.position.x-=2+difficulty
+	if enemy_.target.x<enemy_.position.x:
+		enemy_.position.x-=1+difficulty
 		enemy_.moves+=1
-	if enemy_.ball_target.y>enemy_.position.y:
-		enemy_.position.y+=2+difficulty
+	if enemy_.target.y>enemy_.position.y:
+		enemy_.position.y+=1+difficulty
 		enemy_.moves+=1
-	if enemy_.ball_target.y<enemy_.position.y:
-		enemy_.position.y-=2+difficulty
+	if enemy_.target.y<enemy_.position.y:
+		enemy_.position.y-=1+difficulty
 		enemy_.moves+=1
 
 	if hole_position==enemy_.position:
-		enemy_.position=enemy_.ball_target
+		enemy_.position=enemy_.target
 	
 
 
