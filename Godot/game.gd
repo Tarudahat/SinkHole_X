@@ -140,7 +140,7 @@ func get_enemy_collision():
 			update_car_enemy(enemy_)
 
 		if enemy_used[2]==true and enemy_.enemy_type==1:
-			map_object_layer.set_cell(enemy_.position.x/64, enemy_.position.y/64, -1)
+			map_object_layer.set_cell(enemy_.position.x/64, enemy_.position.y/64+1, -1)
 			update_snow_enemy(enemy_)
 		if enemy_used[3]==true and enemy_.enemy_type==2:
 			update_snow_ball_enemy(enemy_)
@@ -163,11 +163,11 @@ func update_car_enemy(enemy_):
 func update_snow_ball_enemy(enemy_):
 	enemy_.rotation+=1+difficulty
 
-	if enemy_.position==enemy_.target or enemy_.moves>=150:
+	if enemy_.position==enemy_.target or enemy_.moves>=69:
 		enemy_.position.x=200*64
 		enemy_.can_spawn=true
 
-	if round(rand_range(1,120))>115 and enemy_.can_spawn==true:
+	if round(rand_range(1,111))==69 and enemy_.can_spawn==true:
 		enemy_.position=enemy_.linked_node.position
 		enemy_.target=Vector2(player.player_x,player.player_y)
 		enemy_.can_spawn=false
@@ -185,6 +185,8 @@ func update_snow_ball_enemy(enemy_):
 
 	if hole_position!=enemy_.position:
 		enemy_.moves+=1
+		if hole_position.x!=enemy_.position.x and hole_position.y!=enemy_.position.y:
+			enemy_.moves+=1
 	if hole_position==enemy_.position:
 		enemy_.position=enemy_.target
 	
@@ -206,6 +208,9 @@ func update_holes(map_):
 func get_colider(map_):
 	#I find the Godot collision stuff to be confusing 
 	#and wonky to use for what I want to do with it, so I made this garbage
+
+	#uncomment to disable collision:
+	#return -1
 
 	if map_.get_cell((player.position.x-18)/64,(player.position.y-16)/64)>-1:
 		return map_.get_cell((player.position.x-18)/64,(player.position.y-18)/64)
