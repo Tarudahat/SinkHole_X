@@ -86,7 +86,7 @@ func spawn_enemy(enemy_index,direction_,enemy_x_,enemy_y_):
 		enemies.add_child(new_enemy)
 		new_enemy.position=Vector2(enemy_x_*64+32,enemy_y_*64+32)
 		new_enemy.enemy_type=1
-		
+
 		var new_ball=ball.instance()
 		enemies.add_child(new_ball)
 		new_ball.position=Vector2(200*64+32,200*64+32)
@@ -115,10 +115,21 @@ func spawn_enemies(redo_):
 							spawn_enemy(0,1,rnd_[3],3)
 			if enemies.get_child_count()<=5:
 				spawn_enemies(true)
+			illegal_positions.clear()
 		if enemy_used[2]==true and redo_==false:
-			for _i in range(round(rand_range(3,4))):
+			var snow_enemies=0
+			while snow_enemies<round(rand_range(3,4)):
 				hole_position=get_rnd_vector2D("snow_man")
-				spawn_enemy(1,-1,hole_position.x,hole_position.y)
+				if !hole_position in illegal_positions:
+					spawn_enemy(1,-1,hole_position.x,hole_position.y)
+					snow_enemies+=1
+				#why can't you append multiple things at once?
+				illegal_positions.append(Vector2(hole_position.x,hole_position.y))
+				illegal_positions.append(Vector2(hole_position.x,hole_position.y-1))
+				illegal_positions.append(Vector2(hole_position.x,hole_position.y+1))
+				illegal_positions.append(Vector2(hole_position.x-1,hole_position.y))
+				illegal_positions.append(Vector2(hole_position.x+1,hole_position.y))
+			illegal_positions.clear()
 
 
 
@@ -130,6 +141,7 @@ func get_enemy_collision():
 
 		if enemy_used[2]==true and enemy_.enemy_type==1:
 			map_object_layer.set_cell(enemy_.position.x/64, enemy_.position.y/64, -1)
+			update_snow_enemy(enemy_)
 		if enemy_used[3]==true and enemy_.enemy_type==2:
 			update_snow_ball_enemy(enemy_)
 
@@ -151,33 +163,38 @@ func update_car_enemy(enemy_):
 func update_snow_ball_enemy(enemy_):
 	enemy_.rotation+=1+difficulty
 
-	if enemy_.position==enemy_.target or enemy_.moves>=165:
+	if enemy_.position==enemy_.target or enemy_.moves>=150:
 		enemy_.position.x=200*64
 		enemy_.can_spawn=true
-		enemy_.moves=0
 
 	if round(rand_range(1,120))>115 and enemy_.can_spawn==true:
 		enemy_.position=enemy_.linked_node.position
 		enemy_.target=Vector2(player.player_x,player.player_y)
 		enemy_.can_spawn=false
+		enemy_.moves=0
 		
 	hole_position=enemy_.position
 	if enemy_.target.x>enemy_.position.x:
 		enemy_.position.x+=1+difficulty
-		enemy_.moves+=1
 	if enemy_.target.x<enemy_.position.x:
 		enemy_.position.x-=1+difficulty
-		enemy_.moves+=1
 	if enemy_.target.y>enemy_.position.y:
 		enemy_.position.y+=1+difficulty
-		enemy_.moves+=1
 	if enemy_.target.y<enemy_.position.y:
 		enemy_.position.y-=1+difficulty
-		enemy_.moves+=1
 
+	if hole_position!=enemy_.position:
+		enemy_.moves+=1
 	if hole_position==enemy_.position:
 		enemy_.position=enemy_.target
 	
+func update_snow_enemy(enemy_):
+	enemy_.get_child(0).frame=0
+
+	if player.position.x>enemy_.position.x+32:
+		enemy_.get_child(0).frame=2
+	if player.position.x<enemy_.position.x-32:	
+		enemy_.get_child(0).frame=1
 
 
 func update_holes(map_):

@@ -8,7 +8,7 @@ onready var target = Vector2(0,0)
 onready var can_spawn=true
 
 onready var linked_node=Node
-
+onready var moves=0
 
 func _on_enemy_body_entered(_body):
 	collided_with_player = true
