@@ -1,4 +1,5 @@
-main.o: C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/source/main.c \
+structs.o: \
+ C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/source/structs.c \
  C:/devkitPro/libnds/include/nds.h \
  C:/devkitPro/libnds/include/nds/libversion.h \
  C:/devkitPro/libnds/include/nds/ndstypes.h \
@@ -58,24 +59,7 @@ main.o: C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/source/main.c \
  C:/devkitPro/libnds/include/nds/arm9/trig_lut.h \
  C:/devkitPro/libnds/include/nds/arm9/video.h \
  C:/devkitPro/libnds/include/nds/arm9/videoGL.h \
- C:/devkitPro/libnds/include/nds/arm9/nand.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_lib.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_defines.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_basic.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_2d.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_tiledbg.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_affinebg.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_bitmapbg.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_mixedbg.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_sprite256.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_text.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_text16.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_colision.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_sound.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_media.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_3d.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_sprite3d.h \
- C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/source/structs.c
+ C:/devkitPro/libnds/include/nds/arm9/nand.h
 
 C:/devkitPro/libnds/include/nds.h:
 
@@ -196,37 +180,3 @@ C:/devkitPro/libnds/include/nds/arm9/video.h:
 C:/devkitPro/libnds/include/nds/arm9/videoGL.h:
 
 C:/devkitPro/libnds/include/nds/arm9/nand.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_lib.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_defines.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_basic.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_2d.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_tiledbg.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_affinebg.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_bitmapbg.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_mixedbg.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_sprite256.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_text.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_text16.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_colision.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_sound.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_media.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_3d.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/nflib/include/nf_sprite3d.h:
-
-C:/Users/csonk/OneDrive/Documents/SinkHole_X/NDS/source/structs.c:
