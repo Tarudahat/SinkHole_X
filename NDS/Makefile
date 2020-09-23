@@ -22,9 +22,9 @@ include $(DEVKITARM)/base_rules
 
 LIBNDS	:=	$(DEVKITPRO)/libnds
 
-GAME_TITLE	    :=	Text 1
-GAME_SUBTITLE1	:=	Text 2
-GAME_SUBTITLE2	:=	Text 3
+GAME_TITLE	    :=	SinkHole X
+GAME_SUBTITLE1	:=	for nintendo DS
+GAME_SUBTITLE2	:=	by Tarudahat
 GAME_ICON		:=	$(CURDIR)/../icon.bmp
 
 _ADDFILES	:=	-d $(NITRO_FILES)
