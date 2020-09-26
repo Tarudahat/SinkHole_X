@@ -1,16 +1,18 @@
 
 #include <nds.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include <nf_lib.h>
 #include "structs.c"
 
-struct Player player = {0, 16, 16, 0, 0, 1};
+struct Player player = {0, 0, 0, 0, 0, 1};
 struct PrintConsole bottomScreen;
 u8 level;
 u8 scroll_x;
 
+//--needed functions--
 void init(void)
 {
 	//DEBUG: level select
@@ -42,9 +44,10 @@ void init(void)
 	NF_VramSpritePal(0, 0, 0);
 	//BG
 	NF_LoadTiledBg("BG/maps", "maps", 512, 768);
+	NF_LoadTiledBg("BG/layer_2", "item_layer", 512, 768);
 
-	NF_CreateTiledBg(0, 0, "maps"); //layer map
-									//NF_CreateTiledBg(0, 1, "tiles"); //layer items and sinkholes
+	NF_CreateTiledBg(0, 0, "maps");		  //layer map
+	NF_CreateTiledBg(0, 1, "item_layer"); //layer items and sinkholes
 
 	//NF_VramSpriteGfx(0, 1, 1, false);
 	//NF_VramSpritePal(0, 1, 1);
@@ -61,12 +64,29 @@ void render(void)
 	//--debug--:
 	//iprintf("\x1b[5;1H tile layer0:%04i", NF_GetTileOfMap(0, 0, player.player_x / 8, player.player_y / 8));
 	//iprintf("\x1b[6;1H player_x: %03i", player.player_x);
+	//iprintf("\x1b[7;1H player_x: %01i,%01i", (int)((float)((float)(player.player_x - 8) / 16) * 10), (int)(((player.player_x - 8) / 16) * 10));
 	//---------
 
 	swiWaitForVBlank(); // Wait for vertical sync
 	// Update the OAM
 	oamUpdate(&oamMain);
 	oamUpdate(&oamSub);
+}
+//--------------------
+
+//--game functions--
+
+int rand_(u16 rnd_max)
+{
+	u8 rnd_output;
+	srand((unsigned)time(0) + keysHeld());
+
+	rnd_output = rand() % rnd_max;
+	if (rnd_output <= 0)
+	{
+		rnd_output = 1;
+	}
+	return rnd_output;
 }
 
 void player_movement(int keys)
@@ -98,8 +118,6 @@ void player_movement(int keys)
 		NF_SpriteRotScale(0, 0, 128, 256, 256);
 	}
 
-	NF_MoveSprite(0, 0, player.player_x, player.player_y);
-
 	if (player.player_x < -16)
 	{
 		player.player_x = 240;
@@ -120,11 +138,41 @@ void player_movement(int keys)
 		player.player_y = -16;
 	}
 
+	NF_MoveSprite(0, 0, player.player_x, player.player_y);
+
 	//scrolling
-	if (player.player_x < 64 && player.player_x > -1)
+
+	if (player.player_x < 144 && player.player_x > 79)
 	{
-		scroll_x = player.player_x;
+		scroll_x = player.player_x - 80;
 	}
+
+	NF_ScrollBg(0, 0, scroll_x, level * 192);
+}
+
+void spawn_player()
+{
+	player.player_x = rand_(15) * 16 + 8;
+	player.player_y = rand_(10) * 16 + 8;
+
+	if (player.player_x < 144 && player.player_x > 79)
+	{
+		if ((int)((float)((float)(player.player_x - 8) / 16) * 10) != (int)(((player.player_x - 8) / 16) * 10))
+		{
+			player.player_x += 8;
+		}
+
+		scroll_x = player.player_x - 80;
+	}
+	if (player.player_x >= 232)
+	{
+		player.player_x = 232;
+	}
+	if (player.player_x > 144)
+	{
+		scroll_x = 144 - 80;
+	}
+
 	NF_ScrollBg(0, 0, scroll_x, level * 192);
 }
 
@@ -139,6 +187,7 @@ int main(void)
 	//NF_CreateSprite(0, 1, 1, 1, 0, 0);
 
 	touchPosition touchXY;
+	spawn_player();
 
 	while (1)
 	{
@@ -151,6 +200,7 @@ int main(void)
 		player_movement(button);
 
 		render();
+		rand();
 	}
 
 	return 0;
