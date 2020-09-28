@@ -331,6 +331,7 @@ func gen_map(map_index):
 	
 func gen_props(map_,map_index):
 	if map_index==0 or map_index==5:
+		#map id 5=custom level
 		add_object(map_,"grass")
 
 

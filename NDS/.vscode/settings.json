@@ -3,6 +3,7 @@
         "cstdlib": "c",
         "algorithm": "c",
         "*.tcc": "c",
-        "ostream": "c"
+        "ostream": "c",
+        "typeinfo": "c"
     }
 }

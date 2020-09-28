@@ -12,11 +12,11 @@ struct PrintConsole bottomScreen;
 u8 level;
 u8 scroll_x;
 
-//--needed functions--
+//--NDS functions--
 void init(void)
 {
 	//DEBUG: level select
-	level = 1;
+	level = 0;
 
 	NF_Set2D(0, 0);
 	consoleDemoInit();
@@ -29,6 +29,7 @@ void init(void)
 	NF_Set2D(0, 0);
 	NF_InitSpriteBuffers();
 	NF_InitSpriteSys(0);
+
 	NF_InitTiledBgBuffers();
 	NF_InitTiledBgSys(0);
 	//load assets
@@ -53,6 +54,11 @@ void init(void)
 	//NF_VramSpritePal(0, 1, 1);
 }
 
+int get_player_tile(u8 layer)
+{
+	return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x) / 8, (player.player_y + 16 + level * 192) / 8);
+}
+
 void render(void)
 {
 	// Update the OAM array
@@ -62,7 +68,7 @@ void render(void)
 	iprintf("\x1b[1;1H Score:%lli", player.score);
 
 	//--debug--:
-	//iprintf("\x1b[5;1H tile layer0:%04i", NF_GetTileOfMap(0, 0, player.player_x / 8, player.player_y / 8));
+	iprintf("\x1b[5;1H tile layer0:%04i", get_player_tile(0));
 	//iprintf("\x1b[6;1H player_x: %03i", player.player_x);
 	//iprintf("\x1b[7;1H player_x: %01i,%01i", (int)((float)((float)(player.player_x - 8) / 16) * 10), (int)(((player.player_x - 8) / 16) * 10));
 	//---------
@@ -71,23 +77,56 @@ void render(void)
 	// Update the OAM
 	oamUpdate(&oamMain);
 	oamUpdate(&oamSub);
+	NF_UpdateVramMap(0, 0);
+	NF_UpdateVramMap(0, 1);
 }
-//--------------------
 
-//--game functions--
+void make_16x16_tile(u16 tile_id, u8 layer, u16 x, u16 y, u8 mode)
+{
+	//mode 1 => tile map position | mode 0 => tilemap position
+	switch (mode)
+	{
+	case 0:
+		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8, (y + 16 + level * 192) / 8, tile_id);
+		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8 + 1, (y + 16 + level * 192) / 8, tile_id + 1);
+		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8, (y + 16 + level * 192) / 8 + 1, tile_id + 2);
+		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8 + 1, (y + 16 + level * 192) / 8 + 1, tile_id + 3);
+		break;
+
+	case 1:
+		NF_SetTileOfMap(0, layer, x, y + ((level * 192) / 8), tile_id);
+		NF_SetTileOfMap(0, layer, x + 1, y + ((level * 192) / 8), tile_id + 1);
+		NF_SetTileOfMap(0, layer, x, y + ((level * 192) / 8) + 1, tile_id + 2);
+		NF_SetTileOfMap(0, layer, x + 1, y + ((level * 192) / 8) + 1, tile_id + 3);
+		break;
+	}
+}
 
 int rand_(u16 rnd_max)
 {
 	u8 rnd_output;
-	srand((unsigned)time(0) + keysHeld());
 
 	rnd_output = rand() % rnd_max;
+	rnd_output = rnd_output / 2;
 	if (rnd_output <= 0)
 	{
 		rnd_output = 1;
 	}
 	return rnd_output;
 }
+
+int even(int input_num)
+{
+
+	if ((input_num % 2) == 1)
+	{
+		input_num--;
+	}
+	return input_num;
+}
+//--------------------
+
+//--game functions--
 
 void player_movement(int keys)
 {
@@ -176,6 +215,44 @@ void spawn_player()
 	NF_ScrollBg(0, 0, scroll_x, level * 192);
 }
 
+void add_object(u8 layer_, char *str_)
+{
+	u8 prop_id;
+	if (strcmp(str_, "grass") == 0)
+	{
+		prop_id = 1;
+	}
+	else if (strcmp(str_, "item") == 0)
+	{
+		prop_id = rand_(3) + 5;
+	}
+	else
+	{
+		//invalid prop
+	}
+
+	if (strcmp(str_, "grass") == 0)
+	{
+		for (u8 i = 0; i < (rand_(10) + 25); i++)
+		{
+			make_16x16_tile(11, layer_, even(rand_(80)), even(rand_(48) - 1), 1);
+		}
+	}
+	else if (strcmp(str_, "item") == 0)
+	{
+
+		make_16x16_tile(prop_id, layer_, even(rand_(80)), even(rand_(48)), 1);
+	}
+}
+
+void gen_map(u8 map_index)
+{
+	if (map_index == 0)
+	{
+		add_object(0, "grass");
+	}
+}
+
 int main(void)
 {
 	init();
@@ -187,20 +264,18 @@ int main(void)
 	//NF_CreateSprite(0, 1, 1, 1, 0, 0);
 
 	touchPosition touchXY;
+	gen_map(level);
 	spawn_player();
 
 	while (1)
 	{
-
 		scanKeys(); //get  button input
 		touchRead(&touchXY);
 
 		int button = keysHeld();
 
 		player_movement(button);
-
 		render();
-		rand();
 	}
 
 	return 0;
