@@ -10,3 +10,10 @@ struct Player
     u8 bridges;
     u8 speed;
 };
+
+struct Timer
+{
+    u16 delay;
+    bool do_action;
+};
+

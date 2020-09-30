@@ -39,10 +39,13 @@ onready var illegal_positions=[]
 
 onready var item_delay=OS.get_system_time_secs()+12
 onready var item_place_=false
+
 onready var hole_update_delay=0
 onready var hole_update_=true
+
 onready var hole_spawn_delay=0
 onready var spawn_hole_=true
+
 onready var hole_position = Vector2(0,0)
 onready var stuck_position = Vector2(0,0)
 
