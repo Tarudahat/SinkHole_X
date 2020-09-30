@@ -23,8 +23,7 @@ include $(DEVKITARM)/base_rules
 LIBNDS	:=	$(DEVKITPRO)/libnds
 
 GAME_TITLE	    :=	SinkHole X
-GAME_SUBTITLE1	:=	for nintendo DS
-GAME_SUBTITLE2	:=	by Tarudahat
+GAME_SUBTITLE1	:=	by Tarudahat
 GAME_ICON		:=	$(CURDIR)/../icon.bmp
 
 _ADDFILES	:=	-d $(NITRO_FILES)
@@ -32,12 +31,12 @@ _ADDFILES	:=	-d $(NITRO_FILES)
 
 #---------------------------------------------------------------------------------
 %.nds: %.arm9
-	@ndstool -c $@ -9 $< -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)" $(_ADDFILES)
+	@ndstool -c $@ -9 $< -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1)" $(_ADDFILES)
 	@echo built ... $(notdir $@)
 
 #---------------------------------------------------------------------------------
 %.nds: %.elf
-	@ndstool -c $@ -9 $< -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)" $(_ADDFILES)
+	@ndstool -c $@ -9 $< -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1)" $(_ADDFILES)
 	@echo built ... $(notdir $@)
 
 #---------------------------------------------------------------------------------
