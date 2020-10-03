@@ -7,26 +7,28 @@
 #include <nf_lib.h>
 #include "structs.c"
 
-struct Player player = {0, 0, 0, 0, 0, 1};
+struct Player player = {0, 0, 0, 0, 0, 1, 0};
 struct PrintConsole bottomScreen;
+
 struct Timer hole_timer;
 struct Timer update_hole_timer;
+struct Timer speed_item;
+struct Timer invert_item;
+struct Timer items_timer = {12, false};
 
 touchPosition touchXY;
 
 u8 frame_in_sec = {0};
 u16 current_msec;	 //approximation of what msec, from start of the game
 u64 current_sec;	 //sec since the start of game, using console time lags to much
-u8 level;			 //0=plains (OG) 1=Highway 2=Snow field
+u8 level = {0};		 //0=plains (OG) 1=Highway 2=Snow field
 u8 difficulty = {2}; //1=easy 2=normal 3=hard 4=impossible
 u8 scroll_x;
+bool enemies_used = {true};
 
 //--NDS functions--
 void init(void)
 {
-	//DEBUG: level select
-	level = 0;
-
 	//set seed for rnd
 	srand((unsigned)time(0));
 
@@ -68,7 +70,38 @@ void init(void)
 
 int get_player_tile(u8 layer)
 {
-	return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x) / 8, (player.player_y + 16 + level * 192) / 8);
+
+	//uncomment to disable collision;
+	//return -1;
+
+	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + level * 192 - 3) / 8) > 1)
+	{
+		player.collision_x = (player.player_x + 16 + scroll_x - 5) / 8;
+		player.collision_y = ((player.player_y + 16 + level * 192 - 3) / 8);
+		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + level * 192 - 3) / 8);
+	}
+	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + level * 192 + 4) / 8) > 0)
+	{
+		player.collision_x = (player.player_x + 16 + scroll_x - 5) / 8;
+		player.collision_y = ((player.player_y + 16 + level * 192 + 4) / 8);
+		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + level * 192 + 4) / 8);
+	}
+	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + level * 192 - 3) / 8) > 0)
+	{
+		player.collision_x = (player.player_x + 16 + scroll_x + 5) / 8;
+		player.collision_y = ((player.player_y + 16 + level * 192 - 3) / 8);
+		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + level * 192 - 3) / 8);
+	}
+	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + level * 192 + 4) / 8) > 0)
+	{
+		player.collision_x = (player.player_x + 16 + scroll_x + 5) / 8;
+		player.collision_y = ((player.player_y + 16 + level * 192 + 4) / 8);
+		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + level * 192 + 4) / 8);
+	}
+	else
+	{
+		return -1;
+	}
 }
 
 void render(void)
@@ -257,7 +290,7 @@ void add_object(u8 layer_, char *str_)
 	}
 	else if (strcmp(str_, "item") == 0)
 	{
-		prop_id = rand_(3) + 5;
+		prop_id = 21 + rand_(7) * 4;
 	}
 	else
 	{
@@ -320,19 +353,67 @@ void spawn_hole()
 	make_16x16_tile(1, 0, hole_x, hole_y, 1);
 }
 
+void replace_item(u8 tile, s8 tile_2)
+{
+	if (get_player_tile(0) == tile)
+	{
+		make_16x16_tile(tile_2, 0, player.collision_x, player.collision_y, 1);
+	}
+	else if (get_player_tile(0) == tile + 1)
+	{
+		make_16x16_tile(tile_2, 0, player.collision_x - 1, player.collision_y, 1);
+	}
+	else if (get_player_tile(0) == tile + 2)
+	{
+		make_16x16_tile(tile_2, 0, player.collision_x, player.collision_y - 1, 1);
+	}
+	else if (get_player_tile(0) == tile + 3)
+	{
+		make_16x16_tile(tile_2, 0, player.collision_x - 1, player.collision_y - 1, 1);
+	}
+}
+
 void do_physics()
 {
 	if (get_player_tile(0) > 8)
 	{
 		if (get_player_tile(0) < 20)
 		{
-			/*if player.bridges>0:
-				replace_item(map_object_layer,2,9)
-				replace_item(map_object_layer,3,9)
-				replace_item(map_object_layer,4,9)
-				player.bridges-=1
-			else:*/
-			player.player_state = 1;
+			if (player.bridges > 0)
+			{
+				replace_item(9, 37);
+				replace_item(13, 37);
+				replace_item(17, 37);
+				player.bridges -= 1;
+			}
+			else
+			{
+				player.player_state = 1;
+			}
+		}
+		else if (get_player_tile(0) >= 21 && get_player_tile(0) <= 24)
+		{
+			player.speed = 2;
+			player.player_state = 3;
+			replace_item(21, 50);
+			speed_item.delay = current_sec + 5;
+		}
+		else if (get_player_tile(0) >= 33 && get_player_tile(0) <= 36)
+		{
+			player.speed = -1;
+			player.player_state = 2;
+			replace_item(33, 50);
+			invert_item.delay = current_sec + 4;
+		}
+		else if (get_player_tile(0) >= 29 && get_player_tile(0) <= 32)
+		{
+			player.bridges += 1;
+			replace_item(29, 50);
+		}
+		else if (get_player_tile(0) >= 25 && get_player_tile(0) <= 28)
+		{
+			player.score += 10000;
+			replace_item(25, 50);
 		}
 	}
 }
@@ -384,6 +465,17 @@ int main(void)
 			update_hole_timer.delay = current_msec + 450;
 			update_hole_timer.do_action = false;
 		}
+
+		if (items_timer.do_action == false && items_timer.delay <= current_sec)
+		{
+			items_timer.do_action = true;
+		}
+		if (items_timer.do_action == true)
+		{
+			add_object(0, "item");
+			items_timer.delay = current_sec + 9 + difficulty;
+			items_timer.do_action = false;
+		}
 		//----------
 		//--handle player state--
 		switch (player.player_state)
@@ -391,10 +483,24 @@ int main(void)
 		case 1:
 			game_over();
 			break;
+		case 2:
+			if (invert_item.delay <= current_sec)
+			{
+				player.speed = 1;
+				player.player_state = 0;
+			}
+			break;
+		case 3:
+			if (speed_item.delay <= current_sec)
+			{
+				player.speed = 1;
+				player.player_state = 0;
+			}
+			break;
 		default:
 			break;
 		}
-		//----------
+		//-----------
 
 		do_physics();
 		render();

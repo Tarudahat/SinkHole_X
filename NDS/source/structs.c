@@ -8,7 +8,9 @@ struct Player
     s16 player_y;
     u8 player_state;
     u8 bridges;
-    u8 speed;
+    s8 speed;
+    u8 collision_x; //only needed for systems with 8x8 tiles
+    u8 collision_y; //only needed for systems with 8x8 tiles
 };
 
 struct Timer
@@ -16,4 +18,3 @@ struct Timer
     u16 delay;
     bool do_action;
 };
-

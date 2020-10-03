@@ -47,7 +47,6 @@ onready var hole_spawn_delay=0
 onready var spawn_hole_=true
 
 onready var hole_position = Vector2(0,0)
-onready var stuck_position = Vector2(0,0)
 
 
 func get_rnd_vector2D(str_):
@@ -250,7 +249,7 @@ func do_physics():
 			else:
 				player.player_state=1
 		elif get_colider(map_object_layer)==5:
-			stuck_position=Vector2(player.player_x,player.player_y)
+			player.speed=-1
 			player.player_state=2
 			replace_item(map_object_layer,5,-1)
 			temp_tm=OS.get_system_time_secs()+4
@@ -376,14 +375,13 @@ func _process(_delta):
 		if player.player_state==1:
 			game_over()
 		elif player.player_state==2:
-			player.player_x=stuck_position.x
-			player.player_y=stuck_position.y
 			if temp_tm<=OS.get_system_time_secs():
 				player.player_state=0
+				player.speed=1
 		elif player.player_state==3:
 			if temp_tm2<=OS.get_system_time_secs():
 				player.player_state=0
-				player.speed=1
+				player.speed=1 
 
 		do_physics()
 	
