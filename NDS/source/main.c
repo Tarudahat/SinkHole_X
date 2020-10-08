@@ -19,12 +19,14 @@ struct Timer items_timer = {12, false};
 touchPosition touchXY;
 
 u8 frame_in_sec = {0};
-u16 current_msec;	 //approximation of what msec, from start of the game
-u64 current_sec;	 //sec since the start of game, using console time lags to much
+u32 current_msec;	 //approximation of what msec, from start of the game
+u32 current_sec;	 //sec since the start of game, using console time lags to much
 u8 level = {0};		 //0=plains (OG) 1=Highway 2=Snow field
-u8 difficulty = {2}; //1=easy 2=normal 3=hard 4=impossible
+u8 difficulty = {3}; //1=easy 2=normal 3=hard 4=impossible
 u8 scroll_x;
+
 bool enemies_used = {true};
+struct Enemies car_enemies;
 
 //--NDS functions--
 void init(void)
@@ -51,21 +53,22 @@ void init(void)
 	//					name     , id  , w, h
 	NF_LoadSpriteGfx("sprites/car", 0, 16, 16);
 	NF_LoadSpritePal("sprites/car", 0);
-	//NF_LoadSpriteGfx("sprites/bola", 1, 32, 32); // Bola azul
-	//NF_LoadSpritePal("sprites/bola", 1);
+	//NF_LoadSpriteGfx("sprites/car_enemy", 1, 16, 16); // Bola azul
+	//NF_LoadSpritePal("sprites/car_enemy", 1);
 
 	//in which vram? screen,vram,ram,animframes?
 	NF_VramSpriteGfx(0, 0, 0, false);
 	NF_VramSpritePal(0, 0, 0);
-	//BG
-	NF_LoadTiledBg("BG/layer_2", "item_layer", 512, 768);
-	NF_LoadTiledBg("BG/maps", "maps", 512, 768);
-
-	NF_CreateTiledBg(0, 0, "item_layer"); //layer items and sinkholes
-	NF_CreateTiledBg(0, 1, "maps");		  //layer map
 
 	//NF_VramSpriteGfx(0, 1, 1, false);
 	//NF_VramSpritePal(0, 1, 1);
+	//BG
+
+	NF_LoadTiledBg("BG/layer_2", "item_layer", 512, 256);
+	NF_LoadTiledBg("BG/map0", "map0", 512, 256);
+	NF_LoadTiledBg("BG/map1", "map1", 512, 256);
+
+	NF_CreateTiledBg(0, 0, "item_layer"); //items and sinkholes layer
 }
 
 int get_player_tile(u8 layer)
@@ -74,29 +77,29 @@ int get_player_tile(u8 layer)
 	//uncomment to disable collision;
 	//return -1;
 
-	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + level * 192 - 3) / 8) > 1)
+	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 - 3) / 8) > 1)
 	{
 		player.collision_x = (player.player_x + 16 + scroll_x - 5) / 8;
-		player.collision_y = ((player.player_y + 16 + level * 192 - 3) / 8);
-		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + level * 192 - 3) / 8);
+		player.collision_y = ((player.player_y + 16 - 3) / 8);
+		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 - 3) / 8);
 	}
-	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + level * 192 + 4) / 8) > 0)
+	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + 4) / 8) > 0)
 	{
 		player.collision_x = (player.player_x + 16 + scroll_x - 5) / 8;
-		player.collision_y = ((player.player_y + 16 + level * 192 + 4) / 8);
-		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + level * 192 + 4) / 8);
+		player.collision_y = ((player.player_y + 16 + 4) / 8);
+		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x - 5) / 8, (player.player_y + 16 + 4) / 8);
 	}
-	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + level * 192 - 3) / 8) > 0)
+	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 - 3) / 8) > 0)
 	{
 		player.collision_x = (player.player_x + 16 + scroll_x + 5) / 8;
-		player.collision_y = ((player.player_y + 16 + level * 192 - 3) / 8);
-		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + level * 192 - 3) / 8);
+		player.collision_y = ((player.player_y + 16 - 3) / 8);
+		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 - 3) / 8);
 	}
-	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + level * 192 + 4) / 8) > 0)
+	if (NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + 4) / 8) > 0)
 	{
 		player.collision_x = (player.player_x + 16 + scroll_x + 5) / 8;
-		player.collision_y = ((player.player_y + 16 + level * 192 + 4) / 8);
-		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + level * 192 + 4) / 8);
+		player.collision_y = ((player.player_y + 16 + 4) / 8);
+		return NF_GetTileOfMap(0, layer, (player.player_x + 16 + scroll_x + 5) / 8, (player.player_y + 16 + 4) / 8);
 	}
 	else
 	{
@@ -115,9 +118,13 @@ void render(void)
 	//--debug--:
 	//iprintf("\x1b[5;1H tile top layer:%04i", get_player_tile(0));
 	//iprintf("\x1b[6;1H tile bottom layer:%04i", get_player_tile(1));
-	//iprintf("\x1b[8;1H update_hole_timer.delay:%04i", update_hole_timer.delay);
-	//iprintf("\x1b[9;1H MSEC:%04i", current_msec);
-	//iprintf("\x1b[10;1H SEC:%lli", current_sec);
+	//iprintf("\x1b[5;1H hole_timer.delay:%01li", hole_timer.delay);
+	//iprintf("\x1b[6;1H update_hole_timer.delay:%01li", update_hole_timer.delay);
+	//iprintf("\x1b[7;1H invert_item.delay:%01li", invert_item.delay);
+	//iprintf("\x1b[8;1H speed_timer.delay:%01li", speed_item.delay);
+	//iprintf("\x1b[9;1H MSEC:%01li", current_msec);
+	//iprintf("\x1b[10;1H SEC:%01li", current_sec);
+	//iprintf("\x1b[11;1H Player_State:%01i", player.player_state);
 	//update_hole_timer.delay
 	//iprintf("\x1b[6;1H player_x: %03i", player.player_x);
 	//iprintf("\x1b[7;1H player_x: %01i,%01i", (int)((float)((float)(player.player_x - 8) / 16) * 10), (int)(((player.player_x - 8) / 16) * 10));
@@ -137,17 +144,17 @@ void make_16x16_tile(u16 tile_id, u8 layer, u16 x, u16 y, u8 mode)
 	switch (mode)
 	{
 	case 0:
-		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8, (y + 16 + level * 192) / 8, tile_id);
-		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8 + 1, (y + 16 + level * 192) / 8, tile_id + 1);
-		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8, (y + 16 + level * 192) / 8 + 1, tile_id + 2);
-		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8 + 1, (y + 16 + level * 192) / 8 + 1, tile_id + 3);
+		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8, (y + 16) / 8, tile_id);
+		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8 + 1, (y + 16) / 8, tile_id + 1);
+		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8, (y + 16) / 8 + 1, tile_id + 2);
+		NF_SetTileOfMap(0, layer, (x + 16 + scroll_x) / 8 + 1, (y + 16) / 8 + 1, tile_id + 3);
 		break;
 
 	case 1:
-		NF_SetTileOfMap(0, layer, x, y + ((level * 192) / 8), tile_id);
-		NF_SetTileOfMap(0, layer, x + 1, y + ((level * 192) / 8), tile_id + 1);
-		NF_SetTileOfMap(0, layer, x, y + ((level * 192) / 8) + 1, tile_id + 2);
-		NF_SetTileOfMap(0, layer, x + 1, y + ((level * 192) / 8) + 1, tile_id + 3);
+		NF_SetTileOfMap(0, layer, x, y, tile_id);
+		NF_SetTileOfMap(0, layer, x + 1, y, tile_id + 1);
+		NF_SetTileOfMap(0, layer, x, y + 1, tile_id + 2);
+		NF_SetTileOfMap(0, layer, x + 1, y + 1, tile_id + 3);
 		break;
 	}
 }
@@ -181,7 +188,7 @@ int even(int input_num)
 void update_current_time()
 {
 	frame_in_sec++;
-	current_msec += 16;
+	current_msec += 17; //16.666...
 	if (frame_in_sec == 59)
 	{
 		current_sec++;
@@ -250,8 +257,8 @@ void player_movement(int keys)
 		scroll_x = player.player_x - 80;
 	}
 
-	NF_ScrollBg(0, 0, scroll_x, level * 192);
-	NF_ScrollBg(0, 1, scroll_x, level * 192);
+	NF_ScrollBg(0, 0, scroll_x, 0);
+	NF_ScrollBg(0, 1, scroll_x, 0);
 }
 
 void spawn_player()
@@ -277,8 +284,64 @@ void spawn_player()
 		scroll_x = 144 - 80;
 	}
 
-	NF_ScrollBg(0, 0, scroll_x, level * 192);
-	NF_ScrollBg(0, 1, scroll_x, level * 192);
+	NF_ScrollBg(0, 0, scroll_x, 0);
+	NF_ScrollBg(0, 1, scroll_x, 0);
+}
+
+void spawn_enemy(u8 enemy_index, u8 direction_, s16 enemy_x_, s16 enemy_y_)
+{
+	switch (enemy_index)
+	{
+		//car enemy
+	case 0:
+		car_enemies.enemy_x[enemy_index] = enemy_x_;
+		car_enemies.enemy_y[enemy_index] = enemy_y_;
+		car_enemies.enemy_direction[enemy_index] = direction_;
+		NF_CreateSprite(0, enemy_index, 1, 1, car_enemies.enemy_x[enemy_index], car_enemies.enemy_y[enemy_index]);
+		NF_EnableSpriteRotScale(0, enemy_index, enemy_index, true);
+		NF_SpriteRotScale(0, enemy_index, 128, 256, 256);
+		if (direction_ == -1)
+		{
+			NF_SpriteRotScale(0, enemy_index, 384, 256, 256);
+		}
+		car_enemies.member++;
+		break;
+	}
+}
+
+void update_car_enemy(u8 enemy_id)
+{
+	car_enemies.enemy_x[enemy_id] = car_enemies.enemy_direction[enemy_id] * (difficulty + 1.5);
+	if (car_enemies.enemy_x[enemy_id] < -130)
+	{
+		car_enemies.enemy_direction[enemy_id] = 1;
+		NF_SpriteRotScale(0, enemy_id, 128, 256, 256);
+		car_enemies.enemy_y[enemy_id] -= 7 * 16;
+	}
+	else if (car_enemies.enemy_x[enemy_id] > 256 + 130)
+	{
+		car_enemies.enemy_direction[enemy_id] = -1;
+		NF_SpriteRotScale(0, enemy_id, 384, 256, 256);
+		car_enemies.enemy_y[enemy_id] += 7 * 16;
+	}
+
+	if (car_enemies.anim_frame[enemy_id] == 3)
+	{
+		car_enemies.anim_frame[enemy_id] = 0;
+	}
+	NF_SpriteFrame(0, enemy_id, car_enemies.anim_frame[enemy_id]);
+	car_enemies.anim_frame[enemy_id]++;
+	make_16x16_tile(50, 0, car_enemies.enemy_x[enemy_id] / 8, car_enemies.enemy_y[enemy_id] / 8, 1);
+}
+
+void get_enemy_collision()
+{
+	//update enemies here
+	//car enemies
+	for (u8 i = 0; i < car_enemies.member; i++)
+	{
+		update_car_enemy(i);
+	}
 }
 
 void add_object(u8 layer_, char *str_)
@@ -301,7 +364,7 @@ void add_object(u8 layer_, char *str_)
 	{
 		for (u8 i = 0; i < (rand_(8) + 27); i++)
 		{
-			make_16x16_tile(11, layer_, even(rand_(80)), even(rand_(48)), 1);
+			make_16x16_tile(2, layer_, even(rand_(80)), even(rand_(48)), 1);
 		}
 	}
 	else if (strcmp(str_, "item") == 0)
@@ -313,6 +376,16 @@ void add_object(u8 layer_, char *str_)
 
 void gen_map(u8 map_index)
 {
+	switch (map_index)
+	{
+	case 0:
+		NF_CreateTiledBg(0, 1, "map0"); //map layer
+		break;
+	case 1:
+		NF_CreateTiledBg(0, 1, "map1"); //map layer
+		break;
+	}
+
 	if (map_index == 0)
 	{
 		add_object(1, "grass");
@@ -416,6 +489,10 @@ void do_physics()
 			replace_item(25, 50);
 		}
 	}
+	if (enemies_used == true)
+	{
+		get_enemy_collision();
+	}
 }
 
 void game_over()
@@ -431,7 +508,7 @@ int main(void)
 	NF_CreateSprite(0, 0, 0, 0, 0, 0);
 	NF_EnableSpriteRotScale(0, 0, 0, true);
 
-	//NF_CreateSprite(0, 1, 1, 1, 0, 0);
+	//spawn_enemy(1, 1, 32, 32);
 	gen_map(level);
 	spawn_player();
 

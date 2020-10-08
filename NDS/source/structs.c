@@ -13,8 +13,17 @@ struct Player
     u8 collision_y; //only needed for systems with 8x8 tiles
 };
 
+struct Enemies
+{
+    u8 enemy_direction[50];
+    u8 anim_frame[50];
+    s16 enemy_x[50];
+    s16 enemy_y[50];
+    u8 member;
+};
+
 struct Timer
 {
-    u16 delay;
+    u32 delay;
     bool do_action;
 };
