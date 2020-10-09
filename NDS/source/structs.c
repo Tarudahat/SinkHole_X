@@ -25,5 +25,4 @@ struct Enemies
 struct Timer
 {
     u32 delay;
-    bool do_action;
 };

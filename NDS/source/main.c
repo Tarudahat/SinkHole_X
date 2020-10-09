@@ -7,6 +7,10 @@
 #include <nf_lib.h>
 #include "structs.c"
 
+const int map_layer = {2};
+const int item_layer = {1};
+const int menu_layer = {0};
+
 struct Player player = {0, 0, 0, 0, 0, 1, 0};
 struct PrintConsole bottomScreen;
 
@@ -14,14 +18,14 @@ struct Timer hole_timer;
 struct Timer update_hole_timer;
 struct Timer speed_item;
 struct Timer invert_item;
-struct Timer items_timer = {12, false};
+struct Timer items_timer = {12};
 
 touchPosition touchXY;
 
 u8 frame_in_sec = {0};
 u32 current_msec;	 //approximation of what msec, from start of the game
 u32 current_sec;	 //sec since the start of game, using console time lags to much
-u8 level = {0};		 //0=plains (OG) 1=Highway 2=Snow field
+s8 level = {0};		 //0=plains (OG) 1=Highway 2=Snow field
 u8 difficulty = {3}; //1=easy 2=normal 3=hard 4=impossible
 u8 scroll_x;
 
@@ -48,6 +52,7 @@ void init(void)
 
 	NF_InitTiledBgBuffers();
 	NF_InitTiledBgSys(0);
+
 	//load assets
 	//Sprites
 	//					name     , id  , w, h
@@ -62,13 +67,56 @@ void init(void)
 
 	//NF_VramSpriteGfx(0, 1, 1, false);
 	//NF_VramSpritePal(0, 1, 1);
+
 	//BG
 
 	NF_LoadTiledBg("BG/layer_2", "item_layer", 512, 256);
 	NF_LoadTiledBg("BG/map0", "map0", 512, 256);
 	NF_LoadTiledBg("BG/map1", "map1", 512, 256);
 
-	NF_CreateTiledBg(0, 0, "item_layer"); //items and sinkholes layer
+	//menus
+	NF_LoadTiledBg("menu/main_menu0", "main_menu0", 256, 256);
+	NF_LoadTiledBg("menu/main_menu1", "main_menu1", 256, 256);
+	NF_LoadTiledBg("menu/clear_screen", "clear_screen", 256, 256);
+	NF_LoadTiledBg("menu/game_over", "game_over", 256, 256);
+
+	//----
+
+	NF_CreateTiledBg(0, item_layer, "item_layer"); //items and sinkholes layer
+}
+
+void render(void)
+{
+	// Update the OAM array
+	NF_SpriteOamSet(0);
+	NF_SpriteOamSet(1);
+
+	//clear screen
+	iprintf("\x1b[2J");
+	//print score
+	iprintf("\x1b[1;1H Score:%lli", player.score);
+
+	//--debug--:
+	//iprintf("\x1b[5;1H tile top layer:%04i", get_player_tile(0));
+	//iprintf("\x1b[6;1H tile bottom layer:%04i", get_player_tile(1));
+	//iprintf("\x1b[5;1H hole_timer.delay:%01li", hole_timer.delay);
+	//iprintf("\x1b[6;1H update_hole_timer.delay:%01li", update_hole_timer.delay);
+	//iprintf("\x1b[7;1H invert_item.delay:%01li", invert_item.delay);
+	//iprintf("\x1b[8;1H speed_timer.delay:%01li", speed_item.delay);
+	//iprintf("\x1b[9;1H MSEC:%01li", current_msec);
+	//iprintf("\x1b[10;1H SEC:%01li", current_sec);
+	//iprintf("\x1b[11;1H Player_State:%01i", player.player_state);
+	//update_hole_timer.delay
+	//iprintf("\x1b[6;1H player_x: %03i", player.player_x);
+	//---------
+
+	swiWaitForVBlank(); // Wait for vertical sync
+	// Update the OAM
+	oamUpdate(&oamMain);
+	oamUpdate(&oamSub);
+	NF_UpdateVramMap(0, item_layer);
+	NF_UpdateVramMap(0, map_layer);
+	NF_UpdateVramMap(0, menu_layer);
 }
 
 int get_player_tile(u8 layer)
@@ -105,37 +153,6 @@ int get_player_tile(u8 layer)
 	{
 		return -1;
 	}
-}
-
-void render(void)
-{
-	// Update the OAM array
-	NF_SpriteOamSet(0);
-	NF_SpriteOamSet(1);
-
-	iprintf("\x1b[1;1H Score:%lli", player.score);
-
-	//--debug--:
-	//iprintf("\x1b[5;1H tile top layer:%04i", get_player_tile(0));
-	//iprintf("\x1b[6;1H tile bottom layer:%04i", get_player_tile(1));
-	//iprintf("\x1b[5;1H hole_timer.delay:%01li", hole_timer.delay);
-	//iprintf("\x1b[6;1H update_hole_timer.delay:%01li", update_hole_timer.delay);
-	//iprintf("\x1b[7;1H invert_item.delay:%01li", invert_item.delay);
-	//iprintf("\x1b[8;1H speed_timer.delay:%01li", speed_item.delay);
-	//iprintf("\x1b[9;1H MSEC:%01li", current_msec);
-	//iprintf("\x1b[10;1H SEC:%01li", current_sec);
-	//iprintf("\x1b[11;1H Player_State:%01i", player.player_state);
-	//update_hole_timer.delay
-	//iprintf("\x1b[6;1H player_x: %03i", player.player_x);
-	//iprintf("\x1b[7;1H player_x: %01i,%01i", (int)((float)((float)(player.player_x - 8) / 16) * 10), (int)(((player.player_x - 8) / 16) * 10));
-	//---------
-
-	swiWaitForVBlank(); // Wait for vertical sync
-	// Update the OAM
-	oamUpdate(&oamMain);
-	oamUpdate(&oamSub);
-	NF_UpdateVramMap(0, 1);
-	NF_UpdateVramMap(0, 0);
 }
 
 void make_16x16_tile(u16 tile_id, u8 layer, u16 x, u16 y, u8 mode)
@@ -257,8 +274,8 @@ void player_movement(int keys)
 		scroll_x = player.player_x - 80;
 	}
 
-	NF_ScrollBg(0, 0, scroll_x, 0);
-	NF_ScrollBg(0, 1, scroll_x, 0);
+	NF_ScrollBg(0, item_layer, scroll_x, 0);
+	NF_ScrollBg(0, map_layer, scroll_x, 0);
 }
 
 void spawn_player()
@@ -268,7 +285,7 @@ void spawn_player()
 
 	if (player.player_x < 144 && player.player_x > 79)
 	{
-		if ((int)((float)((float)(player.player_x - 8) / 16) * 10) != (int)(((player.player_x - 8) / 16) * 10))
+		if (((player.player_x - 8) / 16) % 2 == 1)
 		{
 			player.player_x += 8;
 		}
@@ -284,8 +301,8 @@ void spawn_player()
 		scroll_x = 144 - 80;
 	}
 
-	NF_ScrollBg(0, 0, scroll_x, 0);
-	NF_ScrollBg(0, 1, scroll_x, 0);
+	NF_ScrollBg(0, item_layer, scroll_x, 0);
+	NF_ScrollBg(0, map_layer, scroll_x, 0);
 }
 
 void spawn_enemy(u8 enemy_index, u8 direction_, s16 enemy_x_, s16 enemy_y_)
@@ -331,7 +348,7 @@ void update_car_enemy(u8 enemy_id)
 	}
 	NF_SpriteFrame(0, enemy_id, car_enemies.anim_frame[enemy_id]);
 	car_enemies.anim_frame[enemy_id]++;
-	make_16x16_tile(50, 0, car_enemies.enemy_x[enemy_id] / 8, car_enemies.enemy_y[enemy_id] / 8, 1);
+	make_16x16_tile(50, item_layer, car_enemies.enemy_x[enemy_id] / 8, car_enemies.enemy_y[enemy_id] / 8, 1);
 }
 
 void get_enemy_collision()
@@ -376,19 +393,14 @@ void add_object(u8 layer_, char *str_)
 
 void gen_map(u8 map_index)
 {
-	switch (map_index)
-	{
-	case 0:
-		NF_CreateTiledBg(0, 1, "map0"); //map layer
-		break;
-	case 1:
-		NF_CreateTiledBg(0, 1, "map1"); //map layer
-		break;
-	}
+	char *map_name = {"0123456789ABCDEF"};
+	sprintf(map_name, "map%i", level);
+
+	NF_CreateTiledBg(0, map_layer, map_name); //map layer
 
 	if (map_index == 0)
 	{
-		add_object(1, "grass");
+		add_object(map_layer, "grass");
 	}
 }
 
@@ -398,12 +410,113 @@ void update_holes()
 	{
 		for (u8 y = 0; y < 24; y += 2)
 		{
-			if (NF_GetTileOfMap(0, 0, x, y) > 0 && NF_GetTileOfMap(0, 0, x, y) < 16 && x % 2 == 0 && y % 2 == 0)
+			if (NF_GetTileOfMap(0, item_layer, x, y) > 0 && NF_GetTileOfMap(0, item_layer, x, y) < 16 && x % 2 == 0 && y % 2 == 0)
 			{
-				make_16x16_tile(NF_GetTileOfMap(0, 0, x, y) + 4, 0, x, y, 1);
+				make_16x16_tile(NF_GetTileOfMap(0, item_layer, x, y) + 4, item_layer, x, y, 1);
 			}
 		}
 	}
+}
+
+void clear_map(u8 layer, u16 tile, u8 mode)
+{ //mode -> 0 fill map | mode -> 1 clear menu screen
+	switch (mode)
+	{
+	case 0:
+		for (u8 x = 0; x < 40; x += 1)
+		{
+			for (u8 y = 0; y < 24; y += 1)
+			{
+				NF_SetTileOfMap(0, layer, x, y, tile);
+			}
+		}
+		break;
+	case 1:
+		NF_CreateTiledBg(0, menu_layer, "clear_screen");
+		break;
+	}
+}
+
+void reset()
+{
+	//-reset-
+	//reset player stuff
+	player.score = 0;
+	player.player_state = 0;
+	player.bridges = 0;
+	player.speed = 1;
+	spawn_player();
+	//reset timers
+	frame_in_sec = 0;
+	current_msec = 0;
+	current_sec = 0;
+	hole_timer.delay = 0;
+
+	update_hole_timer.delay = 0;
+	speed_item.delay = 0;
+	invert_item.delay = 0;
+	items_timer.delay = 12;
+	//reset sinkholes & items
+	clear_map(item_layer, 0, 0);
+	//reset map
+	switch (level)
+	{
+	case 0:
+		clear_map(map_layer, 1, 0);
+		break;
+	}
+	gen_map(level);
+	//-------
+}
+
+void main_menu(void)
+{
+	struct Timer input_delay = {0};
+	bool selecting = {true};
+	char *map_name = {"0123456789ABCDEF"};
+	//make a temp maps
+	NF_CreateTiledBg(0, map_layer, "map0");
+	NF_CreateTiledBg(0, menu_layer, "main_menu0");
+	while (selecting)
+	{
+		scanKeys(); //get  button input
+
+		if (keysHeld() > 0 && input_delay.delay < current_msec)
+		{
+			if (keysHeld() & KEY_LEFT)
+			{
+				level--;
+			}
+			else if (keysHeld() & KEY_RIGHT)
+			{
+				level++;
+			}
+			if (level > 1)
+			{
+				level = 0;
+			}
+			else if (level < 0)
+			{
+				level = 1;
+			}
+
+			sprintf(map_name, "main_menu%i", level);
+			NF_CreateTiledBg(0, menu_layer, map_name);
+			render();
+			input_delay.delay = current_msec + 175;
+		}
+
+		if ((keysHeld() & KEY_A))
+		{
+			selecting = false;
+		}
+
+		render();
+		update_current_time();
+	}
+	clear_map(menu_layer, 0, 1);
+	reset();
+	gen_map(level);
 }
 
 void spawn_hole()
@@ -423,34 +536,34 @@ void spawn_hole()
 		spawn_hole();
 	}
 	*/
-	make_16x16_tile(1, 0, hole_x, hole_y, 1);
+	make_16x16_tile(1, item_layer, hole_x, hole_y, 1);
 }
 
 void replace_item(u8 tile, s8 tile_2)
 {
-	if (get_player_tile(0) == tile)
+	if (get_player_tile(item_layer) == tile)
 	{
-		make_16x16_tile(tile_2, 0, player.collision_x, player.collision_y, 1);
+		make_16x16_tile(tile_2, item_layer, player.collision_x, player.collision_y, 1);
 	}
-	else if (get_player_tile(0) == tile + 1)
+	else if (get_player_tile(item_layer) == tile + 1)
 	{
-		make_16x16_tile(tile_2, 0, player.collision_x - 1, player.collision_y, 1);
+		make_16x16_tile(tile_2, item_layer, player.collision_x - 1, player.collision_y, 1);
 	}
-	else if (get_player_tile(0) == tile + 2)
+	else if (get_player_tile(item_layer) == tile + 2)
 	{
-		make_16x16_tile(tile_2, 0, player.collision_x, player.collision_y - 1, 1);
+		make_16x16_tile(tile_2, item_layer, player.collision_x, player.collision_y - 1, 1);
 	}
-	else if (get_player_tile(0) == tile + 3)
+	else if (get_player_tile(item_layer) == tile + 3)
 	{
-		make_16x16_tile(tile_2, 0, player.collision_x - 1, player.collision_y - 1, 1);
+		make_16x16_tile(tile_2, item_layer, player.collision_x - 1, player.collision_y - 1, 1);
 	}
 }
 
 void do_physics()
 {
-	if (get_player_tile(0) > 8)
+	if (get_player_tile(item_layer) > 8)
 	{
-		if (get_player_tile(0) < 20)
+		if (get_player_tile(item_layer) < 20)
 		{
 			if (player.bridges > 0)
 			{
@@ -464,26 +577,26 @@ void do_physics()
 				player.player_state = 1;
 			}
 		}
-		else if (get_player_tile(0) >= 21 && get_player_tile(0) <= 24)
+		else if (get_player_tile(item_layer) >= 21 && get_player_tile(item_layer) <= 24)
 		{
 			player.speed = 2;
 			player.player_state = 3;
 			replace_item(21, 50);
 			speed_item.delay = current_sec + 5;
 		}
-		else if (get_player_tile(0) >= 33 && get_player_tile(0) <= 36)
+		else if (get_player_tile(item_layer) >= 33 && get_player_tile(item_layer) <= 36)
 		{
 			player.speed = -1;
 			player.player_state = 2;
 			replace_item(33, 50);
 			invert_item.delay = current_sec + 4;
 		}
-		else if (get_player_tile(0) >= 29 && get_player_tile(0) <= 32)
+		else if (get_player_tile(item_layer) >= 29 && get_player_tile(item_layer) <= 32)
 		{
 			player.bridges += 1;
 			replace_item(29, 50);
 		}
-		else if (get_player_tile(0) >= 25 && get_player_tile(0) <= 28)
+		else if (get_player_tile(item_layer) >= 25 && get_player_tile(item_layer) <= 28)
 		{
 			player.score += 10000;
 			replace_item(25, 50);
@@ -497,19 +610,33 @@ void do_physics()
 
 void game_over()
 {
-	iprintf("\x1b[8;12H\x1b[31;1m U DED\x1b[39m");
+	char *final_player_score = {"aaaaaaaaaaaaaaaaaaa"};
+	sprintf(final_player_score, "Score:%lli", player.score);
+
+	//display score
+	//NF_WriteText(0, toptext_layer, 5, 5, final_player_score);
+	NF_CreateTiledBg(0, menu_layer, "game_over");
+
+	while (keysHeld() != (KEY_A || KEY_START))
+	{
+		scanKeys(); //get input
+		render();
+	}
+	clear_map(menu_layer, 0, 1);
+	reset();
 }
 
 int main(void)
 {
 	init();
 
+	main_menu();
+
 	//create player sprite and enable rot.
 	NF_CreateSprite(0, 0, 0, 0, 0, 0);
 	NF_EnableSpriteRotScale(0, 0, 0, true);
 
 	//spawn_enemy(1, 1, 32, 32);
-	gen_map(level);
 	spawn_player();
 
 	while (1)
@@ -517,41 +644,26 @@ int main(void)
 		scanKeys(); //get  button input
 		touchRead(&touchXY);
 
-		int button = keysHeld();
+		u32 button = keysHeld();
 		player_movement(button);
 
 		//--timers--
-		if (hole_timer.do_action == false && hole_timer.delay <= current_sec)
-		{
-			hole_timer.do_action = true;
-		}
-		if (hole_timer.do_action == true)
+		if (hole_timer.delay <= current_sec)
 		{
 			spawn_hole();
 			hole_timer.delay = current_sec + 4 - difficulty;
-			hole_timer.do_action = false;
 		}
 
-		if (update_hole_timer.do_action == false && update_hole_timer.delay <= current_msec)
-		{
-			update_hole_timer.do_action = true;
-		}
-		if (update_hole_timer.do_action == true)
+		if (update_hole_timer.delay <= current_msec)
 		{
 			update_holes();
 			update_hole_timer.delay = current_msec + 450;
-			update_hole_timer.do_action = false;
 		}
 
-		if (items_timer.do_action == false && items_timer.delay <= current_sec)
+		if (items_timer.delay <= current_sec)
 		{
-			items_timer.do_action = true;
-		}
-		if (items_timer.do_action == true)
-		{
-			add_object(0, "item");
+			add_object(item_layer, "item");
 			items_timer.delay = current_sec + 9 + difficulty;
-			items_timer.do_action = false;
 		}
 		//----------
 		//--handle player state--
