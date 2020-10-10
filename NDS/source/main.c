@@ -18,7 +18,7 @@ struct Timer hole_timer;
 struct Timer update_hole_timer;
 struct Timer speed_item;
 struct Timer invert_item;
-struct Timer items_timer = {12};
+struct Timer items_timer = {10};
 
 touchPosition touchXY;
 
@@ -73,10 +73,12 @@ void init(void)
 	NF_LoadTiledBg("BG/layer_2", "item_layer", 512, 256);
 	NF_LoadTiledBg("BG/map0", "map0", 512, 256);
 	NF_LoadTiledBg("BG/map1", "map1", 512, 256);
+	NF_LoadTiledBg("BG/map2", "map2", 512, 256);
 
 	//menus
 	NF_LoadTiledBg("menu/main_menu0", "main_menu0", 256, 256);
 	NF_LoadTiledBg("menu/main_menu1", "main_menu1", 256, 256);
+	NF_LoadTiledBg("menu/main_menu2", "main_menu2", 256, 256);
 	NF_LoadTiledBg("menu/clear_screen", "clear_screen", 256, 256);
 	NF_LoadTiledBg("menu/game_over", "game_over", 256, 256);
 
@@ -491,13 +493,13 @@ void main_menu(void)
 			{
 				level++;
 			}
-			if (level > 1)
+			if (level > 2)
 			{
 				level = 0;
 			}
 			else if (level < 0)
 			{
-				level = 1;
+				level = 2;
 			}
 
 			sprintf(map_name, "main_menu%i", level);
@@ -663,7 +665,7 @@ int main(void)
 		if (items_timer.delay <= current_sec)
 		{
 			add_object(item_layer, "item");
-			items_timer.delay = current_sec + 9 + difficulty;
+			items_timer.delay = current_sec + 7 + difficulty;
 		}
 		//----------
 		//--handle player state--
@@ -673,6 +675,10 @@ int main(void)
 			game_over();
 			break;
 		case 2:
+			if (player.score <= 11)
+			{
+				player.score = 0;
+			}
 			if (invert_item.delay <= current_sec)
 			{
 				player.speed = 1;

@@ -37,7 +37,7 @@ onready var temp_tm = 0
 onready var temp_tm2 = 0
 onready var illegal_positions=[]
 
-onready var item_delay=OS.get_system_time_secs()+12
+onready var item_delay=OS.get_system_time_secs()+10
 onready var item_place_=false
 
 onready var hole_update_delay=0
@@ -344,6 +344,8 @@ func _process(_delta):
 		get_tree().paused=true
 
 	if game_over_!=true:
+		if player.score<0:
+			player.score=0
 		scorecounter.text="Score: "+var2str(player.score)
 		game_over_screen.score_display=scorecounter.text
 
@@ -369,7 +371,7 @@ func _process(_delta):
 
 		if item_place_==true:
 			add_object(map_object_layer,"item")
-			item_delay=OS.get_system_time_secs()+9+difficulty
+			item_delay=OS.get_system_time_secs()+7+difficulty
 			item_place_=false
 
 		if player.player_state==1:
