@@ -32,6 +32,8 @@ u8 scroll_x;
 bool enemies_used = {true};
 struct Enemies car_enemies;
 
+bool paused = {false};
+
 //--NDS functions--
 void init(void)
 {
@@ -47,6 +49,7 @@ void init(void)
 	swiWaitForVBlank(); //vsync
 	NF_SetRootFolder("NITROFS");
 	NF_Set2D(0, 0);
+
 	NF_InitSpriteBuffers();
 	NF_InitSpriteSys(0);
 
@@ -58,7 +61,7 @@ void init(void)
 	//					name     , id  , w, h
 	NF_LoadSpriteGfx("sprites/car", 0, 16, 16);
 	NF_LoadSpritePal("sprites/car", 0);
-	//NF_LoadSpriteGfx("sprites/car_enemy", 1, 16, 16); // Bola azul
+	//NF_LoadSpriteGfx("sprites/car_enemy", 1, 16, 16);
 	//NF_LoadSpritePal("sprites/car_enemy", 1);
 
 	//in which vram? screen,vram,ram,animframes?
@@ -81,6 +84,7 @@ void init(void)
 	NF_LoadTiledBg("menu/main_menu2", "main_menu2", 256, 256);
 	NF_LoadTiledBg("menu/clear_screen", "clear_screen", 256, 256);
 	NF_LoadTiledBg("menu/game_over", "game_over", 256, 256);
+	NF_LoadTiledBg("menu/pause_menu", "pause_menu", 256, 256);
 
 	//----
 
@@ -89,10 +93,6 @@ void init(void)
 
 void render(void)
 {
-	// Update the OAM array
-	NF_SpriteOamSet(0);
-	NF_SpriteOamSet(1);
-
 	//clear screen
 	iprintf("\x1b[2J");
 	//print score
@@ -113,9 +113,12 @@ void render(void)
 	//---------
 
 	swiWaitForVBlank(); // Wait for vertical sync
+	NF_SpriteOamSet(0);
+	NF_SpriteOamSet(1);
 	// Update the OAM
 	oamUpdate(&oamMain);
 	oamUpdate(&oamSub);
+
 	NF_UpdateVramMap(0, item_layer);
 	NF_UpdateVramMap(0, map_layer);
 	NF_UpdateVramMap(0, menu_layer);
@@ -271,9 +274,9 @@ void player_movement(int keys)
 
 	//scrolling
 
-	if (player.player_x < 144 && player.player_x > 79)
+	if (player.player_x < 144 && player.player_x >= 80)
 	{
-		scroll_x = player.player_x - 80;
+		scroll_x = player.player_x - 79;
 	}
 
 	NF_ScrollBg(0, item_layer, scroll_x, 0);
@@ -285,15 +288,6 @@ void spawn_player()
 	player.player_x = rand_(19) * 16 + 8;
 	player.player_y = rand_(12) * 16 + 8;
 
-	if (player.player_x < 144 && player.player_x > 79)
-	{
-		if (((player.player_x - 8) / 16) % 2 == 1)
-		{
-			player.player_x += 8;
-		}
-
-		scroll_x = player.player_x - 80;
-	}
 	if (player.player_x >= 232)
 	{
 		player.player_x = 232;
@@ -301,6 +295,16 @@ void spawn_player()
 	if (player.player_x > 144)
 	{
 		scroll_x = 144 - 80;
+	}
+
+	if (player.player_x < 144 && player.player_x > 79)
+	{
+		if (((player.player_x - 8) / 16) % 2 == 1)
+		{
+			player.player_x += 8;
+		}
+
+		scroll_x = player.player_x - 79;
 	}
 
 	NF_ScrollBg(0, item_layer, scroll_x, 0);
@@ -468,11 +472,13 @@ void reset()
 		break;
 	}
 	gen_map(level);
+	swiWaitForVBlank();
 	//-------
 }
 
 void main_menu(void)
 {
+	level = 0;
 	struct Timer input_delay = {0};
 	bool selecting = {true};
 	char *map_name = {"0123456789ABCDEF"};
@@ -504,6 +510,7 @@ void main_menu(void)
 
 			sprintf(map_name, "main_menu%i", level);
 			NF_CreateTiledBg(0, menu_layer, map_name);
+			swiWaitForVBlank();
 			render();
 			input_delay.delay = current_msec + 175;
 		}
@@ -519,7 +526,11 @@ void main_menu(void)
 	clear_map(menu_layer, 0, 1);
 	reset();
 	gen_map(level);
+	swiWaitForVBlank();
 }
+
+//pre-define pause function?
+void pause_game();
 
 void spawn_hole()
 {
@@ -604,10 +615,11 @@ void do_physics()
 			replace_item(25, 50);
 		}
 	}
+	/*
 	if (enemies_used == true)
 	{
 		get_enemy_collision();
-	}
+	}*/
 }
 
 void game_over()
@@ -637,7 +649,7 @@ int main(void)
 	//create player sprite and enable rot.
 	NF_CreateSprite(0, 0, 0, 0, 0, 0);
 	NF_EnableSpriteRotScale(0, 0, 0, true);
-
+	NF_SpriteLayer(0, 0, 1);
 	//spawn_enemy(1, 1, 32, 32);
 	spawn_player();
 
@@ -647,6 +659,10 @@ int main(void)
 		touchRead(&touchXY);
 
 		u32 button = keysHeld();
+		if ((button == KEY_START) || (button == KEY_SELECT))
+		{
+			pause_game();
+		}
 		player_movement(button);
 
 		//--timers--
@@ -703,4 +719,55 @@ int main(void)
 	}
 
 	return 0;
+}
+
+void pause_game()
+{
+	s8 selected = {0};
+	paused = true;
+	NF_CreateTiledBg(0, menu_layer, "pause_menu");
+	while (paused)
+	{
+		swiWaitForVBlank();
+		scanKeys(); //scan input
+		switch (keysHeld())
+		{
+		case KEY_UP:
+			selected--;
+			if (selected <= 0)
+			{
+				selected = 1;
+			}
+			break;
+		case KEY_DOWN:
+			selected++;
+			if (selected >= 1)
+			{
+				selected = 0;
+			}
+			break;
+		case KEY_A:
+			switch (selected)
+			{
+			case 0:
+				paused = false;
+				break;
+			case 1:
+				paused = false;
+				NF_CreateTiledBg(0, menu_layer, "clear_screen");
+				reset();
+				main();
+				break;
+			}
+			break;
+		default:
+			for (u8 i = 0; i < 60; i++)
+			{
+				iprintf(" ");
+			}
+			break;
+		}
+		render();
+	}
+	NF_CreateTiledBg(0, menu_layer, "clear_screen");
 }
