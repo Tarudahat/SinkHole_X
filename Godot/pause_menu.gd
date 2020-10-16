@@ -9,7 +9,7 @@ func _process(_delta):
 		get_tree().paused=false
 		# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://title_menu.tscn")
-	elif button_continue.pressed==true:
+	elif button_continue.pressed==true or Input.is_action_just_pressed("in_paused"):
 		get_parent().visible=false
-		get_tree().paused=false#
+		get_tree().paused=false
 		

@@ -47,7 +47,7 @@ onready var hole_spawn_delay=0
 onready var spawn_hole_=true
 
 onready var hole_position = Vector2(0,0)
-
+onready var click_delay=0
 
 func get_rnd_vector2D(str_):
 	random_x= round(rand_range(0.0,19))
@@ -290,6 +290,7 @@ func add_object(map_,str_):
 func game_over():
 	self.remove_child(pause_menu)
 	game_over_screen.visible = true
+	click_delay=OS.get_system_time_msecs()+169
 	game_over_=true
 
 func _ready():
@@ -339,7 +340,7 @@ func gen_props(map_,map_index):
 
 func _process(_delta):
 
-	if Input.is_action_pressed("ui_cancel") and game_over_!=true:
+	if Input.is_action_pressed("in_pause") and game_over_!=true:
 		pause_menu.visible=true
 		get_tree().paused=true
 
@@ -391,6 +392,6 @@ func _process(_delta):
 func _input(event):
 	if game_over_==true:
 		
-		if event is InputEventMouseButton:
+		if (Input.is_action_just_pressed("in_accept") or (event is InputEventMouseButton)) and click_delay<=OS.get_system_time_msecs():
 			# warning-ignore:return_value_discarded
 			get_tree().change_scene("res://game.tscn")

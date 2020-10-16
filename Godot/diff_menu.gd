@@ -27,11 +27,11 @@ func _process(_delta):
 		change_info=false
 		OS.delay_msec(175)
 
-	if button_ok.pressed==true:
+	if button_ok.pressed==true or Input.is_action_just_pressed("in_accept"):
 		SceneGlobals.difficulty=selected_diff+1
 		# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://game.tscn")
-	elif button_cancel.pressed==true:
+	elif button_cancel.pressed==true or Input.is_action_just_pressed("ui_cancel"):
 		# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://title_menu.tscn")
 		

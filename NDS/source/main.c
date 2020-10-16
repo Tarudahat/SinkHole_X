@@ -622,15 +622,26 @@ void do_physics()
 	}*/
 }
 
+void display_score(u8 screen, u64 score, u8 x, u8 y, u8 tile_id)
+{
+	char *str_score = {"AAAAAAAAAAA"};
+	char *garbage = {"AAAAA"};
+	sprintf(str_score, "%lli", score);
+	printf(str_score);
+	render();
+	for (u8 i = 0; i < strlen(str_score); i++)
+	{
+		NF_SetTileOfMap(screen, menu_layer, x + i, y, tile_id + strtol(&str_score[i], &garbage, 10) + 6);
+		NF_SetTileOfMap(screen, menu_layer, x + i, y + 1, tile_id + strtol(&str_score[i], &garbage, 10) + 11);
+	}
+}
+
 void game_over()
 {
-	char *final_player_score = {"aaaaaaaaaaaaaaaaaaa"};
-	sprintf(final_player_score, "Score:%lli", player.score);
 
-	//display score
-	//NF_WriteText(0, toptext_layer, 5, 5, final_player_score);
 	NF_CreateTiledBg(0, menu_layer, "game_over");
-
+	//display score
+	display_score(0, player.score, 16, 12, 36);
 	while (keysHeld() != (KEY_A || KEY_START))
 	{
 		scanKeys(); //get input

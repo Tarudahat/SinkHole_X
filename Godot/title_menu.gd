@@ -7,7 +7,7 @@ onready var thumbnail = get_node("background/thumbnail")
 onready var level_name = get_node("background/level_name")
 onready var selected_level=0
 onready var change_info=false
-onready var levels=["Plains","Highway","Snow field","Volcano","Random","Custom"]
+onready var levels=["Plains","Highway","Snow field","---","Random","Custom"]
 
 onready var done = false
 
@@ -32,7 +32,7 @@ func _process(_delta):
 		OS.delay_msec(175)
 
 	
-	if button_ok.pressed==true:
+	if button_ok.pressed==true or Input.is_action_just_pressed("in_accept"):
 		SceneGlobals.level=selected_level
 		if levels[selected_level]=="Random":
 			SceneGlobals.level=abs(round(rand_range(-0.7,3)))
