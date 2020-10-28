@@ -4,6 +4,7 @@
 struct Player
 {
     u64 score;
+    char *score_str;
     s16 player_x;
     s16 player_y;
     u8 player_state;

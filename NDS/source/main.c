@@ -7,12 +7,12 @@
 #include <nf_lib.h>
 #include "structs.c"
 
-const int map_layer = {2};
-const int item_layer = {1};
-const int menu_layer = {0};
+const int map_layer = {3};
+const int item_layer = {2};
+const int menu_layer = {1};
+const int text_layer = {0};
 
-struct Player player = {0, 0, 0, 0, 0, 1, 0};
-struct PrintConsole bottomScreen;
+struct Player player = {0, "AAAAAAAAAAAAAAAAAAA", 0, 0, 0, 0, 1, 0};
 
 struct Timer hole_timer;
 struct Timer update_hole_timer;
@@ -40,21 +40,20 @@ void init(void)
 	//set seed for rnd
 	srand((unsigned)time(0));
 
-	NF_Set2D(0, 0);
-	consoleDemoInit();
-
-	consoleInit(&bottomScreen, 3, BgType_Text4bpp, BgSize_T_256x256, 31, 0, false, true);
-	consoleSelect(&bottomScreen);
-
 	swiWaitForVBlank(); //vsync
 	NF_SetRootFolder("NITROFS");
 	NF_Set2D(0, 0);
+	NF_Set2D(1, 0);
 
 	NF_InitSpriteBuffers();
 	NF_InitSpriteSys(0);
 
 	NF_InitTiledBgBuffers();
 	NF_InitTiledBgSys(0);
+	NF_InitTiledBgSys(1);
+
+	NF_InitTextSys(0);
+	NF_InitTextSys(1);
 
 	//load assets
 	//Sprites
@@ -85,32 +84,31 @@ void init(void)
 	NF_LoadTiledBg("menu/clear_screen", "clear_screen", 256, 256);
 	NF_LoadTiledBg("menu/game_over", "game_over", 256, 256);
 	NF_LoadTiledBg("menu/pause_menu", "pause_menu", 256, 256);
-
+	//font
+	NF_LoadTextFont16("font/font16", "font", 256, 256, 0);
 	//----
 
+	NF_CreateTextLayer16(0, text_layer, 0, "font");
+	NF_CreateTextLayer16(1, text_layer, 0, "font");
 	NF_CreateTiledBg(0, item_layer, "item_layer"); //items and sinkholes layer
+	NF_CreateTiledBg(1, menu_layer, "game_over");
 }
 
 void render(void)
 {
-	//clear screen
-	iprintf("\x1b[2J");
-	//print score
-	iprintf("\x1b[1;1H Score:%lli", player.score);
+	if (player.player_state != 1)
+	{
+		//clear bottom screen
+		NF_ClearTextLayer16(1, text_layer);
 
-	//--debug--:
-	//iprintf("\x1b[5;1H tile top layer:%04i", get_player_tile(0));
-	//iprintf("\x1b[6;1H tile bottom layer:%04i", get_player_tile(1));
-	//iprintf("\x1b[5;1H hole_timer.delay:%01li", hole_timer.delay);
-	//iprintf("\x1b[6;1H update_hole_timer.delay:%01li", update_hole_timer.delay);
-	//iprintf("\x1b[7;1H invert_item.delay:%01li", invert_item.delay);
-	//iprintf("\x1b[8;1H speed_timer.delay:%01li", speed_item.delay);
-	//iprintf("\x1b[9;1H MSEC:%01li", current_msec);
-	//iprintf("\x1b[10;1H SEC:%01li", current_sec);
-	//iprintf("\x1b[11;1H Player_State:%01i", player.player_state);
-	//update_hole_timer.delay
-	//iprintf("\x1b[6;1H player_x: %03i", player.player_x);
-	//---------
+		//display score
+		sprintf(player.score_str, "Score:%lli", player.score);
+		NF_WriteText16(1, text_layer, 5, 5, player.score_str);
+	}
+	else
+	{
+		NF_ClearTextLayer16(1, text_layer);
+	}
 
 	swiWaitForVBlank(); // Wait for vertical sync
 	NF_SpriteOamSet(0);
@@ -122,6 +120,7 @@ void render(void)
 	NF_UpdateVramMap(0, item_layer);
 	NF_UpdateVramMap(0, map_layer);
 	NF_UpdateVramMap(0, menu_layer);
+	NF_UpdateTextLayers();
 }
 
 int get_player_tile(u8 layer)
@@ -276,7 +275,7 @@ void player_movement(int keys)
 
 	if (player.player_x < 144 && player.player_x >= 80)
 	{
-		scroll_x = player.player_x - 79;
+		scroll_x = player.player_x - 80;
 	}
 
 	NF_ScrollBg(0, item_layer, scroll_x, 0);
@@ -297,14 +296,14 @@ void spawn_player()
 		scroll_x = 144 - 80;
 	}
 
-	if (player.player_x < 144 && player.player_x > 79)
+	if (player.player_x < 144 && player.player_x > 78)
 	{
 		if (((player.player_x - 8) / 16) % 2 == 1)
 		{
 			player.player_x += 8;
 		}
 
-		scroll_x = player.player_x - 79;
+		scroll_x = player.player_x - 80;
 	}
 
 	NF_ScrollBg(0, item_layer, scroll_x, 0);
@@ -399,7 +398,7 @@ void add_object(u8 layer_, char *str_)
 
 void gen_map(u8 map_index)
 {
-	char *map_name = {"0123456789ABCDEF"};
+	char map_name[10];
 	sprintf(map_name, "map%i", level);
 
 	NF_CreateTiledBg(0, map_layer, map_name); //map layer
@@ -425,7 +424,7 @@ void update_holes()
 }
 
 void clear_map(u8 layer, u16 tile, u8 mode)
-{ //mode -> 0 fill map | mode -> 1 clear menu screen
+{ //mode -> 0 fill map | mode -> 1 switch to empty map
 	switch (mode)
 	{
 	case 0:
@@ -438,7 +437,7 @@ void clear_map(u8 layer, u16 tile, u8 mode)
 		}
 		break;
 	case 1:
-		NF_CreateTiledBg(0, menu_layer, "clear_screen");
+		NF_CreateTiledBg(0, layer, "clear_screen");
 		break;
 	}
 }
@@ -479,9 +478,10 @@ void reset()
 void main_menu(void)
 {
 	level = 0;
+	player.player_state = 1;
 	struct Timer input_delay = {0};
 	bool selecting = {true};
-	char *map_name = {"0123456789ABCDEF"};
+	char map_name[11];
 	//make a temp maps
 	NF_CreateTiledBg(0, map_layer, "map0");
 	NF_CreateTiledBg(0, menu_layer, "main_menu0");
@@ -622,32 +622,22 @@ void do_physics()
 	}*/
 }
 
-void display_score(u8 screen, u64 score, u8 x, u8 y, u8 tile_id)
-{
-	char *str_score = {"AAAAAAAAAAA"};
-	char *garbage = {"AAAAA"};
-	sprintf(str_score, "%lli", score);
-	printf(str_score);
-	render();
-	for (u8 i = 0; i < strlen(str_score); i++)
-	{
-		NF_SetTileOfMap(screen, menu_layer, x + i, y, tile_id + strtol(&str_score[i], &garbage, 10) + 6);
-		NF_SetTileOfMap(screen, menu_layer, x + i, y + 1, tile_id + strtol(&str_score[i], &garbage, 10) + 11);
-	}
-}
-
 void game_over()
 {
-
 	NF_CreateTiledBg(0, menu_layer, "game_over");
+	render();
 	//display score
-	display_score(0, player.score, 16, 12, 36);
+	NF_ClearTextLayer16(0, text_layer);
+	NF_WriteText16(0, text_layer, 10, 6, player.score_str);
+	NF_UpdateTextLayers();
+
 	while (keysHeld() != (KEY_A || KEY_START))
 	{
 		scanKeys(); //get input
-		render();
 	}
 	clear_map(menu_layer, 0, 1);
+	NF_ClearTextLayer16(0, text_layer);
+	NF_UpdateTextLayers();
 	reset();
 }
 
@@ -660,7 +650,7 @@ int main(void)
 	//create player sprite and enable rot.
 	NF_CreateSprite(0, 0, 0, 0, 0, 0);
 	NF_EnableSpriteRotScale(0, 0, 0, true);
-	NF_SpriteLayer(0, 0, 1);
+	NF_SpriteLayer(0, 0, 2);
 	//spawn_enemy(1, 1, 32, 32);
 	spawn_player();
 
