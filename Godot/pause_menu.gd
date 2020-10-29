@@ -21,11 +21,9 @@ func _process(_delta):
 		selected_button=1	
 
 	if (selected_button==0):
-		button_continue.s
 		if Input.is_action_just_pressed("in_accept"):
 			continue_=true
 	if (selected_button==1):
-		button_quit.text.font.size=80
 		if Input.is_action_just_pressed("in_accept"):
 			quit_=true
 

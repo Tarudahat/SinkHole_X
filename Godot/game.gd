@@ -271,6 +271,8 @@ func do_physics():
 func add_object(map_,str_):
 	if str_=="grass":
 		prop_id=1
+	elif str_=="snow_grass":
+		prop_id=6
 	elif str_=="rocks":
 		prop_id=7
 	elif str_=="item":
@@ -280,6 +282,10 @@ func add_object(map_,str_):
 		pass
 	if str_!="item":
 		for _dummy_1 in range(round(rand_range(25.0,35.0))):
+			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
+			map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
+	if str_=="snow_grass":
+		for _dummy_1 in range(round(rand_range(8.0,10.0))):
 			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
 			map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
 	elif str_=="item":
@@ -336,6 +342,8 @@ func gen_props(map_,map_index):
 	if map_index==0 or map_index==5:
 		#map id 5=custom level
 		add_object(map_,"grass")
+	elif map_index==2:
+		add_object(map_,"snow_grass")
 
 
 func _process(_delta):

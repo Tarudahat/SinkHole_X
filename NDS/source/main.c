@@ -91,7 +91,10 @@ void init(void)
 	NF_CreateTextLayer16(0, text_layer, 0, "font");
 	NF_CreateTextLayer16(1, text_layer, 0, "font");
 	NF_CreateTiledBg(0, item_layer, "item_layer"); //items and sinkholes layer
-	NF_CreateTiledBg(1, menu_layer, "game_over");
+
+	//bottom screen stuff
+	NF_LoadTiledBg("menu/temp_map", "temp_screen", 256, 256);
+	NF_CreateTiledBg(1, menu_layer, "temp_screen");
 }
 
 void render(void)
@@ -273,7 +276,7 @@ void player_movement(int keys)
 
 	//scrolling
 
-	if (player.player_x < 144 && player.player_x >= 80)
+	if (player.player_x >= 80 && player.player_x <= 144)
 	{
 		scroll_x = player.player_x - 80;
 	}
@@ -287,6 +290,11 @@ void spawn_player()
 	player.player_x = rand_(19) * 16 + 8;
 	player.player_y = rand_(12) * 16 + 8;
 
+	if (player.player_x >= 80 && player.player_x <= 144)
+	{
+		scroll_x = player.player_x - 80;
+	}
+
 	if (player.player_x >= 232)
 	{
 		player.player_x = 232;
@@ -294,16 +302,6 @@ void spawn_player()
 	if (player.player_x > 144)
 	{
 		scroll_x = 144 - 80;
-	}
-
-	if (player.player_x < 144 && player.player_x > 78)
-	{
-		if (((player.player_x - 8) / 16) % 2 == 1)
-		{
-			player.player_x += 8;
-		}
-
-		scroll_x = player.player_x - 80;
 	}
 
 	NF_ScrollBg(0, item_layer, scroll_x, 0);
@@ -377,6 +375,10 @@ void add_object(u8 layer_, char *str_)
 	{
 		prop_id = 21 + rand_(7) * 4;
 	}
+	else if (strcmp(str_, "snow_grass") == 0)
+	{
+		prop_id = 1;
+	}
 	else
 	{
 		//invalid prop
@@ -384,7 +386,14 @@ void add_object(u8 layer_, char *str_)
 
 	if (strcmp(str_, "grass") == 0)
 	{
-		for (u8 i = 0; i < (rand_(8) + 27); i++)
+		for (u8 i = 0; i < (rand_(10) + 25); i++)
+		{
+			make_16x16_tile(2, layer_, even(rand_(80)), even(rand_(48)), 1);
+		}
+	}
+	else if (strcmp(str_, "snow_grass") == 0)
+	{
+		for (u8 i = 0; i < (rand_(5) + 12); i++)
 		{
 			make_16x16_tile(2, layer_, even(rand_(80)), even(rand_(48)), 1);
 		}
@@ -406,6 +415,10 @@ void gen_map(u8 map_index)
 	if (map_index == 0)
 	{
 		add_object(map_layer, "grass");
+	}
+	else if (map_index == 2)
+	{
+		add_object(map_layer, "snow_grass");
 	}
 }
 
