@@ -23,10 +23,10 @@ struct Timer items_timer = {10};
 touchPosition touchXY;
 
 u8 frame_in_sec = {0};
-u32 current_msec;	 //approximation of what msec, from start of the game
-u32 current_sec;	 //sec since the start of game, using console time lags to much
-s8 level = {0};		 //0=plains (OG) 1=Highway 2=Snow field
-u8 difficulty = {3}; //1=easy 2=normal 3=hard 4=impossible
+u32 current_msec; //approximation of what msec, from start of the game
+u32 current_sec;  //sec since the start of game, using console time lags to much
+s8 level = {0};	  //0=plains (OG) 1=Highway 2=Snow field
+u8 difficulty;	  //1=easy 2=normal 3=hard 4=impossible
 u8 scroll_x;
 
 bool enemies_used = {true};
@@ -84,6 +84,7 @@ void init(void)
 	NF_LoadTiledBg("menu/clear_screen", "clear_screen", 256, 256);
 	NF_LoadTiledBg("menu/game_over", "game_over", 256, 256);
 	NF_LoadTiledBg("menu/pause_menu", "pause_menu", 256, 256);
+	NF_LoadTiledBg("menu/diff_menu", "diff_menu", 256, 768);
 	//font
 	NF_LoadTextFont16("font/font16", "font", 256, 256, 0);
 	//----
@@ -219,6 +220,7 @@ void update_current_time()
 		frame_in_sec = 0;
 	}
 }
+
 //--------------------
 
 //--game functions--
@@ -488,6 +490,8 @@ void reset()
 	//-------
 }
 
+void difficulty_menu();
+
 void main_menu(void)
 {
 	level = 0;
@@ -537,6 +541,63 @@ void main_menu(void)
 		update_current_time();
 	}
 	clear_map(menu_layer, 0, 1);
+	difficulty_menu();
+}
+
+void difficulty_menu()
+{
+	difficulty = 2;
+	player.player_state = 1;
+	struct Timer input_delay = {0};
+	bool selecting = true;
+	//make a temp maps
+	NF_CreateTiledBg(0, map_layer, "map0");
+	NF_CreateTiledBg(0, menu_layer, "diff_menu");
+	NF_ScrollBg(0, menu_layer, 0, 192 * difficulty);
+	swiDelay(1000000);
+	while (selecting)
+	{
+
+		scanKeys(); //get  button input
+
+		if (keysHeld() > 0 && input_delay.delay < current_msec)
+		{
+			if (keysHeld() && KEY_LEFT)
+			{
+				difficulty--;
+			}
+			else if (keysHeld() && KEY_RIGHT)
+			{
+				difficulty++;
+			}
+			if (difficulty > 3)
+			{
+				difficulty = 0;
+			}
+			else if (difficulty < 0)
+			{
+				difficulty = 3;
+			}
+			render();
+			input_delay.delay = current_msec + 175;
+		}
+
+		if ((keysHeld() && KEY_A))
+		{
+			selecting = false;
+		}
+		else if (keysHeld() && KEY_B)
+		{
+			main_menu();
+		}
+
+		NF_ScrollBg(0, menu_layer, 0, 192 * difficulty);
+		swiWaitForVBlank();
+		render();
+		update_current_time();
+	}
+	difficulty++;
+	clear_map(menu_layer, 0, 1);
 	reset();
 	gen_map(level);
 	swiWaitForVBlank();
@@ -553,16 +614,15 @@ void spawn_hole()
 	hole_x = even(rand_(80));
 	hole_y = even(rand_(48));
 
-	/*I'll have to fix this later, it made the game freeze 
-
-	if (NF_GetTileOfMap(0, 0, hole_x / 8, hole_y / 8) > 0)
+	if (NF_GetTileOfMap(0, item_layer, hole_x, hole_y) > 8 && NF_GetTileOfMap(0, item_layer, hole_x, hole_y) < 20)
 	{
 		update_holes();
-		rand_(99);
 		spawn_hole();
 	}
-	*/
-	make_16x16_tile(1, item_layer, hole_x, hole_y, 1);
+	else
+	{
+		make_16x16_tile(1, item_layer, hole_x, hole_y, 1);
+	}
 }
 
 void replace_item(u8 tile, s8 tile_2)
@@ -673,7 +733,7 @@ int main(void)
 		touchRead(&touchXY);
 
 		u32 button = keysHeld();
-		if ((button == KEY_START) || (button == KEY_SELECT))
+		if ((button == KEY_START))
 		{
 			pause_game();
 		}
