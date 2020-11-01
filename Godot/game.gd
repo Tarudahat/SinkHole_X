@@ -347,7 +347,6 @@ func gen_props(map_,map_index):
 
 
 func _process(_delta):
-
 	if Input.is_action_pressed("in_pause") and game_over_!=true:
 		pause_menu.visible=true
 		get_tree().paused=true

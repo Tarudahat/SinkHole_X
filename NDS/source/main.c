@@ -560,13 +560,13 @@ void difficulty_menu()
 
 		scanKeys(); //get  button input
 
-		if (keysHeld() > 0 && input_delay.delay < current_msec)
+		if ((keysHeld() > 0) & (input_delay.delay < current_msec))
 		{
-			if (keysHeld() && KEY_LEFT)
+			if (keysHeld() & KEY_LEFT)
 			{
 				difficulty--;
 			}
-			else if (keysHeld() && KEY_RIGHT)
+			else if (keysHeld() & KEY_RIGHT)
 			{
 				difficulty++;
 			}
@@ -582,11 +582,11 @@ void difficulty_menu()
 			input_delay.delay = current_msec + 175;
 		}
 
-		if ((keysHeld() && KEY_A))
+		if ((keysHeld() & KEY_A))
 		{
 			selecting = false;
 		}
-		else if (keysHeld() && KEY_B)
+		else if ((keysHeld() & KEY_B))
 		{
 			main_menu();
 		}

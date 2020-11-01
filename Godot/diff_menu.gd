@@ -9,7 +9,7 @@ onready var selected_diff=2
 onready var change_info=true
 onready var diffs=["Baby mode","Normal","Hard","Impossible"]
 
-func _process(_delta):
+func _input(_event):
 	if button_left.pressed==true or Input.is_action_pressed("in_left"):
 		selected_diff-=1
 		change_info=true
@@ -25,7 +25,6 @@ func _process(_delta):
 	if change_info==true:
 		diff_name.text=diffs[selected_diff]
 		change_info=false
-		OS.delay_msec(175)
 
 	if button_ok.pressed==true or Input.is_action_just_pressed("in_accept"):
 		SceneGlobals.difficulty=selected_diff+1

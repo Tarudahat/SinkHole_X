@@ -11,7 +11,7 @@ onready var levels=["Plains","Highway","Snow field","---","Random","Custom"]
 
 onready var done = false
 
-func _process(_delta):
+func _input(_event):
 
 	if button_left.pressed==true or Input.is_action_just_released("in_left")==true:
 		selected_level-=1
@@ -29,7 +29,6 @@ func _process(_delta):
 		thumbnail.texture=load("res://assets/thumbnails/thumbnail_"+str(selected_level)+".png")
 		level_name.text=levels[selected_level]
 		change_info=false
-		OS.delay_msec(175)
 
 	
 	if button_ok.pressed==true or Input.is_action_just_pressed("in_accept"):

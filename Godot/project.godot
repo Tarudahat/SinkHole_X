@@ -25,6 +25,7 @@ config/windows_native_icon="res://assets/icon.ico"
 [autoload]
 
 SceneGlobals="*res://scene_globals.gd"
+SwitchTimer="*res://switch_timer.gd"
 
 [display]
 
