@@ -78,7 +78,7 @@ scale = Vector2( 1.37054, 1.25255 )
 normal = ExtResource( 6 )
 pressed = ExtResource( 6 )
 shape = SubResource( 2 )
-action = "ui_cancel"
+action = "in_pause"
 visibility_mode = 1
 
 [node name="scorecounter" type="Label" parent="GUI"]

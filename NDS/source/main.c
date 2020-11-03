@@ -12,7 +12,7 @@ const int item_layer = {2};
 const int menu_layer = {1};
 const int text_layer = {0};
 
-struct Player player = {0, "AAAAAAAAAAAAAAAAAAA", 0, 0, 0, 0, 1, 0};
+struct Player player = {0, "SCORE STRING THING", 0, 0, 0, 0, 1, 0};
 
 struct Timer hole_timer;
 struct Timer update_hole_timer;
@@ -114,7 +114,6 @@ void render(void)
 		NF_ClearTextLayer16(1, text_layer);
 	}
 
-	swiWaitForVBlank(); // Wait for vertical sync
 	NF_SpriteOamSet(0);
 	NF_SpriteOamSet(1);
 	// Update the OAM
@@ -125,6 +124,7 @@ void render(void)
 	NF_UpdateVramMap(0, map_layer);
 	NF_UpdateVramMap(0, menu_layer);
 	NF_UpdateTextLayers();
+	swiWaitForVBlank();
 }
 
 int get_player_tile(u8 layer)
@@ -291,6 +291,9 @@ void spawn_player()
 {
 	player.player_x = rand_(19) * 16 + 8;
 	player.player_y = rand_(12) * 16 + 8;
+
+	//make the player face the correct direction
+	NF_SpriteRotScale(0, 0, 0, 256, 256);
 
 	if (player.player_x >= 80 && player.player_x <= 144)
 	{
@@ -465,7 +468,7 @@ void reset()
 	player.player_state = 0;
 	player.bridges = 0;
 	player.speed = 1;
-	spawn_player();
+	scroll_x = 0;
 	//reset timers
 	frame_in_sec = 0;
 	current_msec = 0;
@@ -506,7 +509,7 @@ void main_menu(void)
 	{
 		scanKeys(); //get  button input
 
-		if (keysHeld() > 0 && input_delay.delay < current_msec)
+		if ((keysHeld() > 0) & (input_delay.delay < current_msec))
 		{
 			if (keysHeld() & KEY_LEFT)
 			{
@@ -527,33 +530,34 @@ void main_menu(void)
 
 			sprintf(map_name, "main_menu%i", level);
 			NF_CreateTiledBg(0, menu_layer, map_name);
-			swiWaitForVBlank();
-			render();
+
 			input_delay.delay = current_msec + 175;
 		}
 
-		if ((keysHeld() & KEY_A))
+		if (keysHeld() & KEY_A)
 		{
 			selecting = false;
 		}
-
 		render();
+		swiWaitForVBlank();
 		update_current_time();
 	}
 	clear_map(menu_layer, 0, 1);
-	difficulty_menu();
+	NF_CreateTiledBg(0, menu_layer, "diff_menu");
+	swiWaitForVBlank();
 }
 
 void difficulty_menu()
 {
-	difficulty = 2;
+	difficulty = 3;
 	player.player_state = 1;
 	struct Timer input_delay = {0};
 	bool selecting = true;
 	//make a temp maps
 	NF_CreateTiledBg(0, map_layer, "map0");
 	NF_CreateTiledBg(0, menu_layer, "diff_menu");
-	NF_ScrollBg(0, menu_layer, 0, 192 * difficulty);
+	NF_ScrollBg(0, menu_layer, 0, 192 * (difficulty - 1));
+	render();
 	swiDelay(1000000);
 	while (selecting)
 	{
@@ -570,36 +574,36 @@ void difficulty_menu()
 			{
 				difficulty++;
 			}
-			if (difficulty > 3)
+			if (difficulty > 4)
 			{
-				difficulty = 0;
+				difficulty = 1;
 			}
-			else if (difficulty < 0)
+			if (difficulty < 1)
 			{
-				difficulty = 3;
+				difficulty = 4;
 			}
+			swiWaitForVBlank();
 			render();
 			input_delay.delay = current_msec + 175;
 		}
 
-		if ((keysHeld() & KEY_A))
+		if (keysHeld() & KEY_A)
 		{
 			selecting = false;
 		}
-		else if ((keysHeld() & KEY_B))
+		else if (keysHeld() & KEY_B)
 		{
+			reset();
+			swiWaitForVBlank();
+			NF_CreateTiledBg(0, menu_layer, "main_menu0");
 			main_menu();
 		}
 
-		NF_ScrollBg(0, menu_layer, 0, 192 * difficulty);
+		NF_ScrollBg(0, menu_layer, 0, 192 * (difficulty - 1));
 		swiWaitForVBlank();
 		render();
 		update_current_time();
 	}
-	difficulty++;
-	clear_map(menu_layer, 0, 1);
-	reset();
-	gen_map(level);
 	swiWaitForVBlank();
 }
 
@@ -712,6 +716,8 @@ void game_over()
 	NF_ClearTextLayer16(0, text_layer);
 	NF_UpdateTextLayers();
 	reset();
+	spawn_player();
+	swiWaitForVBlank();
 }
 
 int main(void)
@@ -719,12 +725,16 @@ int main(void)
 	init();
 
 	main_menu();
+	difficulty_menu();
+	clear_map(menu_layer, 0, 1);
 
 	//create player sprite and enable rot.
 	NF_CreateSprite(0, 0, 0, 0, 0, 0);
 	NF_EnableSpriteRotScale(0, 0, 0, true);
 	NF_SpriteLayer(0, 0, 2);
 	//spawn_enemy(1, 1, 32, 32);
+
+	reset();
 	spawn_player();
 
 	while (1)
