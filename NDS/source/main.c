@@ -29,10 +29,15 @@ s8 level = {0};	  //0=plains (OG) 1=Highway 2=Snow field
 u8 difficulty;	  //1=easy 2=normal 3=hard 4=impossible
 u8 scroll_x;
 
-bool enemies_used = {true};
-struct Enemies car_enemies;
-
 bool paused = {false};
+
+bool enemies_used = {false};
+bool car_enemies_used = {false};
+
+u8 total_enemies;
+struct enemy_group car_enemies;
+
+struct enemy_group empty_group;
 
 //--NDS functions--
 void init(void)
@@ -56,19 +61,22 @@ void init(void)
 	NF_InitTextSys(1);
 
 	//load assets
-	//Sprites
-	//					name     , id  , w, h
+	//Sprites							|->the img
+	//					name     , ram-slot  , w, h
 	NF_LoadSpriteGfx("sprites/car", 0, 16, 16);
 	NF_LoadSpritePal("sprites/car", 0);
-	//NF_LoadSpriteGfx("sprites/car_enemy", 1, 16, 16);
-	//NF_LoadSpritePal("sprites/car_enemy", 1);
+
+	NF_LoadSpriteGfx("sprites/car_enemy", 1, 16, 16);
+	NF_LoadSpritePal("sprites/car_enemy", 1);
 
 	//in which vram? screen,vram,ram,animframes?
 	NF_VramSpriteGfx(0, 0, 0, false);
 	NF_VramSpritePal(0, 0, 0);
 
-	//NF_VramSpriteGfx(0, 1, 1, false);
-	//NF_VramSpritePal(0, 1, 1);
+	//                     |-> img it will be using		|-> 0-128 slots to contain sprite
+	//            screen, ram-slot,                  Vram-slot,
+	NF_VramSpriteGfx(0, 1, 1, false);
+	NF_VramSpritePal(0, 1, 1);
 
 	//BG
 
@@ -116,15 +124,15 @@ void render(void)
 
 	NF_SpriteOamSet(0);
 	NF_SpriteOamSet(1);
-	// Update the OAM
-	oamUpdate(&oamMain);
-	oamUpdate(&oamSub);
 
 	NF_UpdateVramMap(0, item_layer);
 	NF_UpdateVramMap(0, map_layer);
 	NF_UpdateVramMap(0, menu_layer);
 	NF_UpdateTextLayers();
 	swiWaitForVBlank();
+	// Update the OAM
+	oamUpdate(&oamMain);
+	oamUpdate(&oamSub);
 }
 
 int get_player_tile(u8 layer)
@@ -164,8 +172,8 @@ int get_player_tile(u8 layer)
 }
 
 void make_16x16_tile(u16 tile_id, u8 layer, u16 x, u16 y, u8 mode)
-{
-	//mode 1 => tile map position | mode 0 => tilemap position
+{ //mode 1 => tile map position | mode 0 => on screen for player
+
 	switch (mode)
 	{
 	case 0:
@@ -224,6 +232,13 @@ void update_current_time()
 //--------------------
 
 //--game functions--
+
+void create_sprite(u8 index, u8 asset)
+{
+	NF_CreateSprite(0, index, asset, asset, 0, 0);
+	NF_EnableSpriteRotScale(0, index, index, true); //using index for arg. 3 so that they have separate rotations
+	NF_SpriteLayer(0, index, item_layer);
+}
 
 void player_movement(int keys)
 {
@@ -313,59 +328,102 @@ void spawn_player()
 	NF_ScrollBg(0, map_layer, scroll_x, 0);
 }
 
-void spawn_enemy(u8 enemy_index, u8 direction_, s16 enemy_x_, s16 enemy_y_)
+void spawn_enemy(u8 enemy_type, u8 direction_, u16 enemy_x_, u16 enemy_y_)
 {
-	switch (enemy_index)
+	if (enemy_type == 0)
 	{
-		//car enemy
-	case 0:
-		car_enemies.enemy_x[enemy_index] = enemy_x_;
-		car_enemies.enemy_y[enemy_index] = enemy_y_;
-		car_enemies.enemy_direction[enemy_index] = direction_;
-		NF_CreateSprite(0, enemy_index, 1, 1, car_enemies.enemy_x[enemy_index], car_enemies.enemy_y[enemy_index]);
-		NF_EnableSpriteRotScale(0, enemy_index, enemy_index, true);
-		NF_SpriteRotScale(0, enemy_index, 128, 256, 256);
+		car_enemies.group_members++;
+		total_enemies++;
+
+		car_enemies.enemy_id[car_enemies.group_members] = total_enemies;
+		create_sprite(total_enemies, 1);
+
+		NF_SpriteRotScale(0, total_enemies, 128, 256, 256); //turn to the right
+		car_enemies.enemy_direction[car_enemies.group_members] = direction_;
 		if (direction_ == -1)
 		{
-			NF_SpriteRotScale(0, enemy_index, 384, 256, 256);
+			NF_SpriteRotScale(0, total_enemies, 384, 256, 256); //turn to the left
 		}
-		car_enemies.member++;
-		break;
+
+		car_enemies.enemy_x[car_enemies.group_members] = enemy_x_ * 16 + 8;
+		car_enemies.enemy_y[car_enemies.group_members] = enemy_y_ * 16 + 8;
+		NF_MoveSprite(0, total_enemies, car_enemies.enemy_x[car_enemies.group_members], car_enemies.enemy_y[car_enemies.group_members]);
+		//ew_enemy.enemy_type = 0
 	}
 }
 
-void update_car_enemy(u8 enemy_id)
+void update_car_enemy(u8 enemy_)
 {
-	car_enemies.enemy_x[enemy_id] = car_enemies.enemy_direction[enemy_id] * (difficulty + 1.5);
-	if (car_enemies.enemy_x[enemy_id] < -130)
+	car_enemies.enemy_x[enemy_] += car_enemies.enemy_direction[enemy_] * ((int)(difficulty / 4) + 1);
+	if (car_enemies.enemy_x[enemy_] <= -32)
 	{
-		car_enemies.enemy_direction[enemy_id] = 1;
-		NF_SpriteRotScale(0, enemy_id, 128, 256, 256);
-		car_enemies.enemy_y[enemy_id] -= 7 * 16;
+		car_enemies.enemy_direction[enemy_] = 1;
+		NF_SpriteRotScale(0, car_enemies.enemy_id[enemy_], 128, 256, 256); //turn right
+		car_enemies.enemy_y[enemy_] -= 7 * 16;
 	}
-	else if (car_enemies.enemy_x[enemy_id] > 256 + 130)
+	else if (car_enemies.enemy_x[enemy_] >= 288)
 	{
-		car_enemies.enemy_direction[enemy_id] = -1;
-		NF_SpriteRotScale(0, enemy_id, 384, 256, 256);
-		car_enemies.enemy_y[enemy_id] += 7 * 16;
+		car_enemies.enemy_direction[enemy_] = -1;
+		NF_SpriteRotScale(0, car_enemies.enemy_id[enemy_], 384, 256, 256); //turn left
+		car_enemies.enemy_y[enemy_] += 7 * 16;
 	}
 
-	if (car_enemies.anim_frame[enemy_id] == 3)
+	if (car_enemies.anim_delay <= current_msec) // anim_delay needs to be updated when iterating trough the enemies
 	{
-		car_enemies.anim_frame[enemy_id] = 0;
+		car_enemies.current_frame++;
+		if (car_enemies.current_frame >= 5)
+			car_enemies.current_frame = 0;
 	}
-	NF_SpriteFrame(0, enemy_id, car_enemies.anim_frame[enemy_id]);
-	car_enemies.anim_frame[enemy_id]++;
-	make_16x16_tile(50, item_layer, car_enemies.enemy_x[enemy_id] / 8, car_enemies.enemy_y[enemy_id] / 8, 1);
+	else
+	{
+		car_enemies.anim_delay = current_msec + 125;
+	}
+
+	//NF_SpriteFrame(0, car_enemies.enemy_id[enemy_], car_enemies.current_frame);
+	NF_MoveSprite(0, car_enemies.enemy_id[enemy_], car_enemies.enemy_x[enemy_], car_enemies.enemy_y[enemy_]);
+	//make sure that we do stuff inbounds
+	if ((car_enemies.enemy_x[enemy_] <= 256 * 2) & (car_enemies.enemy_x[enemy_] >= 0))
+	{
+		if ((car_enemies.enemy_y[enemy_] <= 192) & (car_enemies.enemy_y[enemy_] >= 0))
+		{
+
+			make_16x16_tile(50, item_layer, even(car_enemies.enemy_x[enemy_] / 8 + scroll_x / 8), car_enemies.enemy_y[enemy_] / 8 + 1, 1);
+		}
+	}
 }
 
 void get_enemy_collision()
 {
+
 	//update enemies here
-	//car enemies
-	for (u8 i = 0; i < car_enemies.member; i++)
+	if (car_enemies_used == true)
 	{
-		update_car_enemy(i);
+		for (u8 enemy_index = 1; enemy_index <= car_enemies.group_members; enemy_index++) //start from 1 bc 0 is for player
+		{
+			update_car_enemy(enemy_index);
+		}
+	}
+
+	/*for enemy_ in enemies.get_children():
+		
+		if enemy_used[1]==true and enemy_.enemy_type==0:
+			update_car_enemy(enemy_)
+
+		if enemy_used[2]==true and enemy_.enemy_type==1:
+			map_object_layer.set_cell(enemy_.position.x/64, enemy_.position.y/64+1, -1)
+			update_snow_enemy(enemy_)
+		if enemy_used[3]==true and enemy_.enemy_type==2:
+			update_snow_ball_enemy(enemy_)
+
+		if enemy_.collided_with_player == true:
+			player.player_state=1*/
+}
+
+void clear_enemies()
+{
+	for (u8 enemy = 1; enemy <= total_enemies; enemy++)
+	{
+		NF_DeleteSprite(0, enemy);
 	}
 }
 
@@ -417,9 +475,18 @@ void gen_map(u8 map_index)
 
 	NF_CreateTiledBg(0, map_layer, map_name); //map layer
 
+	enemies_used = true;
 	if (map_index == 0)
 	{
 		add_object(map_layer, "grass");
+		enemies_used = false;
+	}
+	else if (map_index == 1)
+	{
+		//spawn_car enemies
+		car_enemies_used = true;
+		spawn_enemy(0, 1, 4, 0);
+		spawn_enemy(0, 1, 6, 0);
 	}
 	else if (map_index == 2)
 	{
@@ -488,6 +555,18 @@ void reset()
 		clear_map(map_layer, 1, 0);
 		break;
 	}
+	if (enemies_used == true)
+	{
+		//reset enemies
+		clear_enemies();
+		total_enemies = 0;
+		//reset enemy data
+		if (car_enemies_used == true)
+		{
+			car_enemies = empty_group;
+		}
+	}
+	car_enemies_used = false;
 	gen_map(level);
 	swiWaitForVBlank();
 	//-------
@@ -497,6 +576,7 @@ void difficulty_menu();
 
 void main_menu(void)
 {
+	swiWaitForVBlank();
 	level = 0;
 	player.player_state = 1;
 	struct Timer input_delay = {0};
@@ -692,11 +772,10 @@ void do_physics()
 			replace_item(25, 50);
 		}
 	}
-	/*
 	if (enemies_used == true)
 	{
 		get_enemy_collision();
-	}*/
+	}
 }
 
 void game_over()
@@ -728,11 +807,8 @@ int main(void)
 	difficulty_menu();
 	clear_map(menu_layer, 0, 1);
 
-	//create player sprite and enable rot.
-	NF_CreateSprite(0, 0, 0, 0, 0, 0);
-	NF_EnableSpriteRotScale(0, 0, 0, true);
-	NF_SpriteLayer(0, 0, 2);
-	//spawn_enemy(1, 1, 32, 32);
+	//create player sprite
+	create_sprite(0, 0);
 
 	reset();
 	spawn_player();

@@ -49,6 +49,7 @@ onready var spawn_hole_=true
 onready var hole_position = Vector2(0,0)
 onready var click_delay=0
 
+
 func get_rnd_vector2D(str_):
 	random_x= round(rand_range(0.0,19))
 	random_y= round(rand_range(0.0,11))
