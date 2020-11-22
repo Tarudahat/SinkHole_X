@@ -1,11 +1,12 @@
 [gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=1]
-[ext_resource path="res://player.tscn" type="PackedScene" id=2]
+[ext_resource path="res://objects/player.tscn" type="PackedScene" id=2]
 [ext_resource path="res://game.gd" type="Script" id=3]
-[ext_resource path="res://assets/touch_button.png" type="Texture" id=4]
-[ext_resource path="res://game_over.tscn" type="PackedScene" id=5]
-[ext_resource path="res://assets/touch_button_menu.png" type="Texture" id=6]
+[ext_resource path="res://assets/GUI/touch_button.png" type="Texture" id=4]
+[ext_resource path="res://menus/game_over.tscn" type="PackedScene" id=5]
+[ext_resource path="res://assets/GUI/touch_button_menu.png" type="Texture" id=6]
+
 
 [sub_resource type="CircleShape2D" id=1]
 radius = 100.0
@@ -43,7 +44,7 @@ action = "in_up"
 visibility_mode = 1
 
 [node name="TouchScreenButton2" type="TouchScreenButton" parent="GUI"]
-position = Vector2( 841.649, 624 )
+position = Vector2( 840, 624 )
 rotation = -1.5811
 scale = Vector2( 0.8, 0.8 )
 normal = ExtResource( 4 )

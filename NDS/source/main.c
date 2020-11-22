@@ -18,7 +18,7 @@ struct Timer hole_timer;
 struct Timer update_hole_timer;
 struct Timer speed_item;
 struct Timer invert_item;
-struct Timer items_timer = {10};
+struct Timer items_timer = {7};
 
 touchPosition touchXY;
 
@@ -28,12 +28,16 @@ u32 current_sec;  //sec since the start of game, using console time lags to much
 s8 level = {0};	  //0=plains (OG) 1=Highway 2=Snow field
 u8 difficulty;	  //1=easy 2=normal 3=hard 4=impossible
 u8 scroll_x;
+u8 prev_scroll_x;
+s8 enemy_scroll;
 
+bool reset_game = {false};
 bool paused = {false};
 
 bool enemies_used = {false};
 bool car_enemies_used = {false};
 
+bool enemies_deleted = {false};
 u8 total_enemies;
 struct enemy_group car_enemies;
 
@@ -328,12 +332,13 @@ void spawn_player()
 	NF_ScrollBg(0, map_layer, scroll_x, 0);
 }
 
-void spawn_enemy(u8 enemy_type, u8 direction_, u16 enemy_x_, u16 enemy_y_)
+void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 {
+	total_enemies++;
+	enemies_deleted = false;
 	if (enemy_type == 0)
 	{
 		car_enemies.group_members++;
-		total_enemies++;
 
 		car_enemies.enemy_id[car_enemies.group_members] = total_enemies;
 		create_sprite(total_enemies, 1);
@@ -348,38 +353,37 @@ void spawn_enemy(u8 enemy_type, u8 direction_, u16 enemy_x_, u16 enemy_y_)
 		car_enemies.enemy_x[car_enemies.group_members] = enemy_x_ * 16 + 8;
 		car_enemies.enemy_y[car_enemies.group_members] = enemy_y_ * 16 + 8;
 		NF_MoveSprite(0, total_enemies, car_enemies.enemy_x[car_enemies.group_members], car_enemies.enemy_y[car_enemies.group_members]);
-		//ew_enemy.enemy_type = 0
 	}
 }
 
 void update_car_enemy(u8 enemy_)
 {
-	car_enemies.enemy_x[enemy_] += car_enemies.enemy_direction[enemy_] * ((int)(difficulty / 4) + 1);
-	if (car_enemies.enemy_x[enemy_] <= -32)
+	//update position
+	car_enemies.enemy_x[enemy_] += car_enemies.enemy_direction[enemy_] * ((int)(difficulty / 4) + 1) + enemy_scroll;
+	if ((car_enemies.enemy_x[enemy_] <= -32 - scroll_x) && (car_enemies.enemy_direction[enemy_] == -1))
 	{
 		car_enemies.enemy_direction[enemy_] = 1;
 		NF_SpriteRotScale(0, car_enemies.enemy_id[enemy_], 128, 256, 256); //turn right
 		car_enemies.enemy_y[enemy_] -= 7 * 16;
 	}
-	else if (car_enemies.enemy_x[enemy_] >= 288)
+	else if ((car_enemies.enemy_x[enemy_] >= 288 + 16 * 4) && (car_enemies.enemy_direction[enemy_] == 1))
 	{
 		car_enemies.enemy_direction[enemy_] = -1;
 		NF_SpriteRotScale(0, car_enemies.enemy_id[enemy_], 384, 256, 256); //turn left
 		car_enemies.enemy_y[enemy_] += 7 * 16;
 	}
 
-	if (car_enemies.anim_delay <= current_msec) // anim_delay needs to be updated when iterating trough the enemies
+	//animation
+	if (car_enemies.anim_delay <= current_msec)
 	{
 		car_enemies.current_frame++;
-		if (car_enemies.current_frame >= 5)
+		if (car_enemies.current_frame >= 4)
 			car_enemies.current_frame = 0;
+		car_enemies.anim_delay = current_msec + 142;
 	}
-	else
-	{
-		car_enemies.anim_delay = current_msec + 125;
-	}
+	NF_SpriteFrame(0, car_enemies.enemy_id[enemy_], car_enemies.current_frame);
 
-	//NF_SpriteFrame(0, car_enemies.enemy_id[enemy_], car_enemies.current_frame);
+	//move sprite and fill holes
 	NF_MoveSprite(0, car_enemies.enemy_id[enemy_], car_enemies.enemy_x[enemy_], car_enemies.enemy_y[enemy_]);
 	//make sure that we do stuff inbounds
 	if ((car_enemies.enemy_x[enemy_] <= 256 * 2) & (car_enemies.enemy_x[enemy_] >= 0))
@@ -387,36 +391,123 @@ void update_car_enemy(u8 enemy_)
 		if ((car_enemies.enemy_y[enemy_] <= 192) & (car_enemies.enemy_y[enemy_] >= 0))
 		{
 
-			make_16x16_tile(50, item_layer, even(car_enemies.enemy_x[enemy_] / 8 + scroll_x / 8), car_enemies.enemy_y[enemy_] / 8 + 1, 1);
+			make_16x16_tile(50, item_layer, even(car_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), car_enemies.enemy_y[enemy_] / 8 + 1, 1);
 		}
 	}
 }
 
+void update_enemy_scroll()
+{
+	if (prev_scroll_x > scroll_x)
+	{
+		enemy_scroll = 1;
+	}
+	else if (prev_scroll_x < scroll_x)
+	{
+		enemy_scroll = -1;
+	}
+	if (prev_scroll_x == scroll_x)
+		enemy_scroll = 0;
+	prev_scroll_x = scroll_x;
+}
+
+bool sprites_collide(s32 x1, s32 y1, s32 x2, s32 y2, u8 size1, u8 size2, u8 offset1, u8 offset2)
+{
+	if ((((x1 + offset1 >= x2 + offset2) && (x1 + offset1 <= x2 + size2 + offset2)) || ((x1 + size1 + offset1 >= x2 + offset2) && (x1 + size1 + offset1 <= x2 + size2 + offset2))) && (((y1 + offset1 >= y2 + offset2) && (y1 + offset1 <= y2 + size2 + offset2)) || ((y1 + size1 + offset1 >= y2 + offset2) && (y1 + size1 + offset1 <= y2 + size2 + offset2))))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void get_enemy_collision()
 {
-
 	//update enemies here
+	update_enemy_scroll();
 	if (car_enemies_used == true)
 	{
 		for (u8 enemy_index = 1; enemy_index <= car_enemies.group_members; enemy_index++) //start from 1 bc 0 is for player
 		{
 			update_car_enemy(enemy_index);
+
+			if (sprites_collide(player.player_x, player.player_y, car_enemies.enemy_x[enemy_index], car_enemies.enemy_y[enemy_index], 12, 12, 2, 2) == true)
+			{
+				player.player_state = 1;
+			}
 		}
 	}
+}
 
-	/*for enemy_ in enemies.get_children():
-		
-		if enemy_used[1]==true and enemy_.enemy_type==0:
-			update_car_enemy(enemy_)
+bool is_in(u8 input, unsigned char array[])
+{
+	for (u8 i = 0; i <= (sizeof &array / sizeof array[0]); i++)
+	{
+		if (input == array[i])
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
-		if enemy_used[2]==true and enemy_.enemy_type==1:
-			map_object_layer.set_cell(enemy_.position.x/64, enemy_.position.y/64+1, -1)
-			update_snow_enemy(enemy_)
-		if enemy_used[3]==true and enemy_.enemy_type==2:
-			update_snow_ball_enemy(enemy_)
+void spawn_enemies()
+{
+	u8 rnd_[1];
+	u8 illegal_position_x[256];
+	u8 enemy = {0};
+	u8 i = {0};
 
-		if enemy_.collided_with_player == true:
-			player.player_state=1*/
+	if (car_enemies_used)
+	{
+		while ((enemy <= 6 + rand_(7)) & (i <= 255))
+		{
+			rnd_[0] = rand_(50);
+			rnd_[1] = rand_(9) + 1;
+
+			//set y position to one of the four lanes
+			if (rnd_[0] <= 5)
+			{
+				rnd_[0] = 0;
+			}
+			else if ((rnd_[0] >= 6) & (rnd_[0] <= 10))
+			{
+				rnd_[0] = 2;
+			}
+			else if ((rnd_[0] >= 11) & (rnd_[0] <= 15))
+			{
+				rnd_[0] = 7;
+			}
+			else if ((rnd_[0] >= 16) & (rnd_[0] <= 20))
+			{
+				rnd_[0] = 9;
+			}
+			else
+			{
+				rnd_[0] = 0;
+			}
+			//actually spawn the enemy
+			if (is_in(rnd_[1], illegal_position_x) == false)
+			{
+				if (rnd_[0] >= 7)
+				{
+					spawn_enemy(0, -1, rnd_[1], rnd_[0]);
+				}
+				else
+				{
+					spawn_enemy(0, 1, rnd_[1], rnd_[0]);
+				}
+				//add the used pos. & the ones next to it to illegal positions
+				illegal_position_x[i] = rnd_[1] - 1;
+				i++;
+				illegal_position_x[i] = rnd_[1] + 1;
+				i++;
+				illegal_position_x[i] = rnd_[1];
+				i++;
+				enemy++;
+			}
+		}
+	}
 }
 
 void clear_enemies()
@@ -425,6 +516,7 @@ void clear_enemies()
 	{
 		NF_DeleteSprite(0, enemy);
 	}
+	enemies_deleted = true;
 }
 
 void add_object(u8 layer_, char *str_)
@@ -475,18 +567,9 @@ void gen_map(u8 map_index)
 
 	NF_CreateTiledBg(0, map_layer, map_name); //map layer
 
-	enemies_used = true;
 	if (map_index == 0)
 	{
 		add_object(map_layer, "grass");
-		enemies_used = false;
-	}
-	else if (map_index == 1)
-	{
-		//spawn_car enemies
-		car_enemies_used = true;
-		spawn_enemy(0, 1, 4, 0);
-		spawn_enemy(0, 1, 6, 0);
 	}
 	else if (map_index == 2)
 	{
@@ -527,6 +610,33 @@ void clear_map(u8 layer, u16 tile, u8 mode)
 	}
 }
 
+void reset_enemies()
+{
+	//delete enemy sprites if there are any
+	if ((enemies_deleted == false) & (total_enemies > 0) & (&car_enemies != &empty_group))
+	{
+		clear_enemies();
+	}
+
+	//reset gen enemy data
+	enemies_used = false;
+	car_enemies_used = false;
+	total_enemies = 0;
+	//clear enemy data
+	car_enemies = empty_group;
+	//re-SET the gen enemy data
+	switch (level)
+	{
+	case 0:
+		enemies_used = false;
+		break;
+	case 1:
+		car_enemies_used = true;
+		enemies_used = true;
+		break;
+	}
+}
+
 void reset()
 {
 	//-reset-
@@ -547,26 +657,13 @@ void reset()
 	invert_item.delay = 0;
 	items_timer.delay = 12;
 	//reset sinkholes & items
-	clear_map(item_layer, 0, 0);
-	//reset map
 	switch (level)
 	{
 	case 0:
 		clear_map(map_layer, 1, 0);
 		break;
 	}
-	if (enemies_used == true)
-	{
-		//reset enemies
-		clear_enemies();
-		total_enemies = 0;
-		//reset enemy data
-		if (car_enemies_used == true)
-		{
-			car_enemies = empty_group;
-		}
-	}
-	car_enemies_used = false;
+	clear_map(item_layer, 0, 0);
 	gen_map(level);
 	swiWaitForVBlank();
 	//-------
@@ -576,7 +673,6 @@ void difficulty_menu();
 
 void main_menu(void)
 {
-	swiWaitForVBlank();
 	level = 0;
 	player.player_state = 1;
 	struct Timer input_delay = {0};
@@ -618,6 +714,7 @@ void main_menu(void)
 		{
 			selecting = false;
 		}
+		swiWaitForVBlank();
 		render();
 		swiWaitForVBlank();
 		update_current_time();
@@ -631,14 +728,15 @@ void difficulty_menu()
 {
 	difficulty = 3;
 	player.player_state = 1;
-	struct Timer input_delay = {0};
+	struct Timer input_delay = {current_msec + 420};
 	bool selecting = true;
 	//make a temp maps
 	NF_CreateTiledBg(0, map_layer, "map0");
 	NF_CreateTiledBg(0, menu_layer, "diff_menu");
 	NF_ScrollBg(0, menu_layer, 0, 192 * (difficulty - 1));
+	swiWaitForVBlank();
 	render();
-	swiDelay(1000000);
+
 	while (selecting)
 	{
 
@@ -688,7 +786,7 @@ void difficulty_menu()
 }
 
 //pre-define pause function?
-void pause_game();
+bool pause_game();
 
 void spawn_hole()
 {
@@ -794,7 +892,13 @@ void game_over()
 	clear_map(menu_layer, 0, 1);
 	NF_ClearTextLayer16(0, text_layer);
 	NF_UpdateTextLayers();
+
 	reset();
+	reset_enemies();
+	if (enemies_used)
+	{
+		spawn_enemies();
+	};
 	spawn_player();
 	swiWaitForVBlank();
 }
@@ -802,89 +906,102 @@ void game_over()
 int main(void)
 {
 	init();
-
-	main_menu();
-	difficulty_menu();
-	clear_map(menu_layer, 0, 1);
-
-	//create player sprite
-	create_sprite(0, 0);
-
-	reset();
-	spawn_player();
-
 	while (1)
 	{
-		scanKeys(); //get  button input
-		touchRead(&touchXY);
+		main_menu();
+		difficulty_menu();
+		clear_map(menu_layer, 0, 1);
 
-		u32 button = keysHeld();
-		if ((button == KEY_START))
-		{
-			pause_game();
-		}
-		player_movement(button);
+		//create player sprite
+		create_sprite(0, 0);
 
-		//--timers--
-		if (hole_timer.delay <= current_sec)
-		{
-			spawn_hole();
-			hole_timer.delay = current_sec + 4 - difficulty;
-		}
+		reset();
+		reset_enemies();
 
-		if (update_hole_timer.delay <= current_msec)
+		if (enemies_used)
 		{
-			update_holes();
-			update_hole_timer.delay = current_msec + 450;
-		}
+			spawn_enemies();
+		};
+		spawn_player();
 
-		if (items_timer.delay <= current_sec)
+		while (reset_game == false)
 		{
-			add_object(item_layer, "item");
-			items_timer.delay = current_sec + 7 + difficulty;
-		}
-		//----------
-		//--handle player state--
-		switch (player.player_state)
-		{
-		case 1:
-			game_over();
-			break;
-		case 2:
-			if (player.score <= 11)
+			scanKeys(); //get  button input
+			touchRead(&touchXY);
+
+			u32 button = keysHeld();
+			if ((button == KEY_START))
 			{
-				player.score = 0;
+				if (pause_game() == true)
+				{
+					swiDelay(1000000);
+					reset_game = true;
+				}
 			}
-			if (invert_item.delay <= current_sec)
-			{
-				player.speed = 1;
-				player.player_state = 0;
-			}
-			break;
-		case 3:
-			if (speed_item.delay <= current_sec)
-			{
-				player.speed = 1;
-				player.player_state = 0;
-			}
-			break;
-		default:
-			break;
-		}
-		//-----------
+			player_movement(button);
 
-		do_physics();
-		render();
-		update_current_time();
+			//--timers--
+			if (hole_timer.delay <= current_sec)
+			{
+				spawn_hole();
+				hole_timer.delay = current_sec + 4 - difficulty;
+			}
+
+			if (update_hole_timer.delay <= current_msec)
+			{
+				update_holes();
+				update_hole_timer.delay = current_msec + 450;
+			}
+
+			if (items_timer.delay <= current_sec)
+			{
+				add_object(item_layer, "item");
+				items_timer.delay = current_sec + 7 + difficulty;
+			}
+			//----------
+			//--handle player state--
+			switch (player.player_state)
+			{
+			case 1:
+				game_over();
+				break;
+			case 2:
+				if (player.score <= 11)
+				{
+					player.score = 0;
+				}
+				if (invert_item.delay <= current_sec)
+				{
+					player.speed = 1;
+					player.player_state = 0;
+				}
+				break;
+			case 3:
+				if (speed_item.delay <= current_sec)
+				{
+					player.speed = 1;
+					player.player_state = 0;
+				}
+				break;
+			default:
+				break;
+			}
+			//-----------
+
+			do_physics();
+			render();
+			update_current_time();
+		}
+		reset_game = false;
 	}
-
 	return 0;
 }
 
-void pause_game()
+bool pause_game() //gota fix
 {
 	s8 selected = {0};
 	paused = true;
+	bool reset_game = false;
 	NF_CreateTiledBg(0, menu_layer, "pause_menu");
 	while (paused)
 	{
@@ -914,9 +1031,7 @@ void pause_game()
 				break;
 			case 1:
 				paused = false;
-				NF_CreateTiledBg(0, menu_layer, "clear_screen");
-				reset();
-				main();
+				reset_game = true;
 				break;
 			}
 			break;
@@ -930,4 +1045,5 @@ void pause_game()
 		render();
 	}
 	NF_CreateTiledBg(0, menu_layer, "clear_screen");
+	return reset_game;
 }

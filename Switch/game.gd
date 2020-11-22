@@ -7,22 +7,26 @@ extends Node2D
 # the switch because some features aren't that accurate.  
 #=========================================================
 
-
 #player, enemies and maps
 onready var player= get_node("player/player")
 onready var enemies= get_node("enemies")
-onready var enemy_types = 3
+const enemy_types = 5
 onready var enemy_used = [TYPE_BOOL]
-onready var map= preload("res://map.tscn")
-onready var map2= preload("res://map2.tscn") 
-onready var map3= preload("res://map3.tscn") 
+onready var map= preload("res://maps/map.tscn")
+onready var map2= preload("res://maps/map2.tscn") 
+onready var map3= preload("res://maps/map3.tscn") 
 
-onready var enemy= preload("res://enemy.tscn")
-onready var snow_enemy= preload("res://snow_enemy.tscn")
-onready var ball= preload("res://ball.tscn")
+onready var map4= preload("res://maps/map4.tscn") 
+onready var rivers= preload("res://maps/lava_rivers.tscn") 
+
+onready var enemy= preload("res://objects/enemies/enemy.tscn")
+onready var snow_enemy= preload("res://objects/enemies/snow_enemy.tscn")
+onready var ball= preload("res://objects/enemies/ball.tscn")
+onready var fire_ball= preload("res://objects/enemies/fire_ball.tscn")
+onready var target_node= preload("res://objects/enemies/target.tscn")
 
 #pause menu things
-onready var pause_menu= preload("res://pause_menu.tscn").instance()
+onready var pause_menu= preload("res://menus/pause_menu.tscn").instance()
 
 #level selection/diff.
 onready var map_current= Node
@@ -45,7 +49,7 @@ onready var temp_tm = 0
 onready var temp_tm2 = 0
 onready var illegal_positions=[]
 
-onready var item_delay=SwitchTimer.get_estimate_time_secs+10
+onready var item_delay=SwitchTimer.get_estimate_time_secs+7
 onready var item_place_=false
 
 onready var hole_update_delay=0
@@ -56,6 +60,7 @@ onready var spawn_hole_=true
 
 onready var hole_position = Vector2(0,0)
 onready var click_delay=0
+
 
 func get_rnd_vector2D(str_):
 	random_x= round(rand_range(0.0,19))
@@ -70,13 +75,16 @@ func get_rnd_vector2D(str_):
 
 
 func spawn_player():
-	hole_position=get_rnd_vector2D("player")
-	player.player_x=hole_position.x
-	player.player_y=hole_position.y
+	var player_position=get_rnd_vector2D("player")
+	if map_object_layer.get_cell((player_position.x-32)/64,(player_position.y-32)/64)<10:
+		player.player_x=player_position.x
+		player.player_y=player_position.y
+	else:
+		spawn_player()
 
 func spawn_hole():
 	hole_position=get_rnd_vector2D("")
-	if map_object_layer.get_cell(hole_position.x, hole_position.y)>=0 and map_object_layer.get_cell(hole_position.x, hole_position.y)<=4:
+	if (map_object_layer.get_cell(hole_position.x, hole_position.y)>=0 and map_object_layer.get_cell(hole_position.x, hole_position.y)<=4) or (map_object_layer.get_cell(hole_position.x, hole_position.y)>=10):
 		update_holes(map_object_layer)
 		spawn_hole()
 	map_object_layer.set_cell(hole_position.x, hole_position.y, 0)
@@ -102,7 +110,17 @@ func spawn_enemy(enemy_index,direction_,enemy_x_,enemy_y_):
 		new_ball.position=Vector2(200*64+32,200*64+32)
 		new_ball.enemy_type=2
 		new_ball.linked_node=new_enemy
-
+	elif enemy_index==2:
+		var new_target=target_node.instance()
+		var new_enemy=fire_ball.instance()
+		enemies.add_child(new_target)
+		enemies.add_child(new_enemy)
+		new_enemy.linked_node=new_target
+		new_target.linked_node=new_enemy
+		new_enemy.enemy_type=3
+		new_target.position=Vector2(enemy_x_*64+32,enemy_y_*64+32)
+		new_target.enemy_type=4
+		
 	
 func spawn_enemies(redo_):
 	if enemy_used[0]==true:
@@ -140,7 +158,13 @@ func spawn_enemies(redo_):
 				illegal_positions.append(Vector2(hole_position.x-1,hole_position.y))
 				illegal_positions.append(Vector2(hole_position.x+1,hole_position.y))
 			illegal_positions.clear()
-
+		if enemy_used[4]==true and redo_==false:
+			var fire_balls=0
+			while fire_balls<round(rand_range(4,6)):
+				hole_position=get_rnd_vector2D("snow_man")
+				spawn_enemy(2,-1,hole_position.x,hole_position.y)
+				fire_balls+=1
+				
 
 
 func get_enemy_collision():
@@ -155,8 +179,21 @@ func get_enemy_collision():
 		if enemy_used[3]==true and enemy_.enemy_type==2:
 			update_snow_ball_enemy(enemy_)
 
+		if enemy_used[4]==true and enemy_.enemy_type==3:
+			update_fire_enemy(enemy_)
+
+		if enemy_used[5]==true and enemy_.enemy_type==4:
+			update_fire_target(enemy_)
+
 		if enemy_.collided_with_player == true:
-			player.player_state=1
+
+			if enemy_.enemy_type==3:
+				if enemy_.position.y-16>enemy_.linked_node.position.y-90:
+					player.player_state=1
+				elif enemy_.position.y-16<=enemy_.linked_node.position.y-90:
+					enemy_.collided_with_player=false
+			else:
+				player.player_state=1
 
 func update_car_enemy(enemy_):
 	enemy_.position+=Vector2(enemy_.enemy_direction*(difficulty+1.5),0)
@@ -208,6 +245,21 @@ func update_snow_enemy(enemy_):
 	if player.position.x<enemy_.position.x-32:	
 		enemy_.get_child(0).frame=1
 
+func update_fire_target(enemy_):
+	if enemy_.can_spawn==true:
+		var rnd_position=get_rnd_vector2D("snow man")
+		enemy_.position=Vector2(rnd_position.x*64+32,rnd_position.y*64+32)
+		enemy_.linked_node.position.y=enemy_.position.y-(256+32*round(rand_range(1.0,4.0)))
+		enemy_.can_spawn=false
+
+func update_fire_enemy(enemy_):
+	enemy_.position.x=enemy_.linked_node.position.x
+	if enemy_.linked_node.position.y-16>=enemy_.position.y:
+		enemy_.position.y+=1*difficulty
+	else:
+		enemy_.linked_node.can_spawn=true
+		update_fire_target(enemy_.linked_node)
+		
 
 func update_holes(map_):
 	for dummy_1 in range(20):
@@ -272,6 +324,8 @@ func do_physics():
 		elif get_colider(map_object_layer)==8:
 			player.score+=10000
 			replace_item(map_object_layer,8,-1)
+		elif get_colider(map_object_layer)>=10:
+			player.player_state=1
 	if enemy_used[0]==true:
 		get_enemy_collision()
 
@@ -282,31 +336,34 @@ func add_object(map_,str_):
 	elif str_=="snow_grass":
 		prop_id=6
 	elif str_=="rocks":
-		prop_id=7
+		prop_id=8
 	elif str_=="item":
 		prop_id=round(rand_range(5.0,8.0))
 	else:
 		#Invalid prop
 		pass
-	if str_!="item":
-		for _dummy_1 in range(round(rand_range(25.0,35.0))):
-			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
-			map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
 	if str_=="snow_grass":
-		for _dummy_1 in range(round(rand_range(8.0,10.0))):
+		for _dummy_1 in range(round(rand_range(18.0,28.0))):
 			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
 			map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
 	elif str_=="item":
 		hole_position=get_rnd_vector2D("")
-		if map_.get_cell(hole_position.x, hole_position.y)==-1:
+		if map_.get_cell(hole_position.x, hole_position.y)==-1:#check if tile is empty
 			map_.set_cell(hole_position.x, hole_position.y, prop_id)
+	elif str_=="rocks":
+		for _dummy_1 in range(round(rand_range(7.0,12.0))):
+			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
+			map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
+	elif str_!="item":
+			for _dummy_1 in range(round(rand_range(25.0,35.0))):
+				hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
+				map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
 
 func game_over():
 	self.remove_child(pause_menu)
 	game_over_screen.visible = true
 	click_delay=SwitchTimer.get_estimate_time_msecs+169
 	game_over_=true
-
 
 func _ready():
 	#==make touch overlays go away (for switch)==
@@ -316,7 +373,6 @@ func _ready():
 	self.get_node("GUI/TouchScreenButton4").visible = false
 	self.get_node("GUI/TouchScreenButton5").visible = false
 	#============================================
-
 	game_over_screen.visible = false
 	
 	for _i in enemy_types:
@@ -342,7 +398,20 @@ func gen_map(map_index):
 		scorecounter.set("custom_colors/font_color", Color8(25,50,220,255))
 		enemy_used[2]=true
 		enemy_used[3]=true
+	elif map_index==3:
 
+
+		map_current=map4.instance()
+		
+		random_x=round(rand_range(0.0,8.0))
+		var rnd_river=rivers.instance()
+		var river_=rnd_river.get_child(random_x)
+
+		rnd_river.remove_child(river_)
+		map_current.add_child(river_)
+
+		enemy_used[4]=true
+		enemy_used[5]=true
 	elif map_index==5:
 		map_current=map.instance()
 		enemy_used[1]=true
@@ -361,6 +430,8 @@ func gen_props(map_,map_index):
 		add_object(map_,"grass")
 	elif map_index==2:
 		add_object(map_,"snow_grass")
+	elif map_index==3:
+		add_object(map_,"rocks")
 
 
 func _process(_delta):

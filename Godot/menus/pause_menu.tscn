@@ -1,0 +1,94 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://assets/GUI/pause_menu_panel.png" type="Texture" id=1]
+[ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://menus/pause_menu.gd" type="Script" id=3]
+[ext_resource path="res://assets/GUI/select_cursor.png" type="Texture" id=4]
+
+
+[sub_resource type="DynamicFont" id=1]
+font_data = ExtResource( 2 )
+
+[sub_resource type="Theme" id=2]
+default_font = SubResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=3]
+
+[sub_resource type="DynamicFont" id=4]
+size = 70
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=5]
+size = 85
+font_data = ExtResource( 2 )
+
+[node name="Popup" type="Popup"]
+pause_mode = 2
+margin_right = 24.0
+margin_bottom = 24.0
+theme = SubResource( 2 )
+popup_exclusive = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="pause_menu_panel" type="TextureRect" parent="."]
+margin_left = 192.0
+margin_top = 120.0
+margin_right = 1472.0
+margin_bottom = 888.0
+rect_scale = Vector2( 0.7, 0.7 )
+texture = ExtResource( 1 )
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="continue_button" type="Button" parent="pause_menu_panel"]
+margin_left = 161.0
+margin_top = 248.0
+margin_right = 1120.0
+margin_bottom = 400.0
+focus_neighbour_bottom = NodePath("../quit_button")
+focus_next = NodePath("../quit_button")
+focus_previous = NodePath("../quit_button")
+mouse_default_cursor_shape = 2
+custom_styles/hover = SubResource( 3 )
+custom_fonts/font = SubResource( 4 )
+text = "Continue"
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="quit_button" type="Button" parent="pause_menu_panel"]
+margin_left = 161.0
+margin_top = 516.0
+margin_right = 1120.0
+margin_bottom = 674.0
+focus_neighbour_top = NodePath("../continue_button")
+focus_next = NodePath("../continue_button")
+focus_previous = NodePath("../continue_button")
+mouse_default_cursor_shape = 2
+custom_fonts/font = SubResource( 4 )
+text = "Quit"
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="pause_menu_label" type="Label" parent="pause_menu_panel"]
+margin_left = 365.714
+margin_top = 22.8571
+margin_right = 1019.71
+margin_bottom = 121.857
+custom_fonts/font = SubResource( 5 )
+text = "Pause menu"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="cursor" type="Sprite" parent="pause_menu_panel"]
+position = Vector2( 160, 248.572 )
+texture = ExtResource( 4 )
+offset = Vector2( 480, 80 )
