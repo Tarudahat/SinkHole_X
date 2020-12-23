@@ -1,10 +1,10 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://menus/diff_menu.gd" type="Script" id=2]
 [ext_resource path="res://assets/GUI/arrow_button.png" type="Texture" id=3]
 [ext_resource path="res://assets/GUI/menu_panel.png" type="Texture" id=4]
-
+[ext_resource path="res://assets/font.tres" type="DynamicFont" id=5]
 
 [sub_resource type="DynamicFont" id=1]
 size = 60
@@ -38,9 +38,10 @@ __meta__ = {
 }
 
 [node name="difficulty_select_label" type="Label" parent="background"]
-margin_left = 343.806
-margin_right = 937.806
-margin_bottom = 128.0
+margin_left = 344.0
+margin_top = -8.0
+margin_right = 938.0
+margin_bottom = 120.0
 custom_fonts/font = SubResource( 1 )
 text = "Difficulty select"
 valign = 1
@@ -100,12 +101,41 @@ custom_fonts/font = SubResource( 7 )
 text = "Ok"
 flat = true
 
+[node name="shadow" type="Label" parent="background/button_ok"]
+show_behind_parent = true
+margin_left = 30.1051
+margin_top = 20.4603
+margin_right = 100.105
+margin_bottom = 70.4603
+custom_fonts/font = ExtResource( 5 )
+custom_colors/font_color = Color( 0.309804, 0.309804, 0.309804, 1 )
+text = "Ok"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="button_cancel" type="Button" parent="background"]
-margin_left = 90.0
+margin_left = 192.0
 margin_top = 640.0
-margin_right = 292.0
+margin_right = 394.0
 margin_bottom = 720.0
 mouse_default_cursor_shape = 2
 custom_fonts/font = SubResource( 7 )
 text = "Cancel"
 flat = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="shadow2" type="Label" parent="background/button_cancel"]
+show_behind_parent = true
+margin_left = 10.7952
+margin_top = 20.1797
+margin_right = 200.795
+margin_bottom = 70.1797
+custom_fonts/font = ExtResource( 5 )
+custom_colors/font_color = Color( 0.309804, 0.309804, 0.309804, 1 )
+text = "Cancel"
+__meta__ = {
+"_edit_use_anchors_": false
+}

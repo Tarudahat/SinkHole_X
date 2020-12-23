@@ -3,7 +3,7 @@ extends Node2D
 #player, enemies and maps
 onready var player= get_node("player/player")
 onready var enemies= get_node("enemies")
-const enemy_types = 5
+const enemy_types = 6
 onready var enemy_used = [TYPE_BOOL]
 onready var map= preload("res://maps/map.tscn")
 onready var map2= preload("res://maps/map2.tscn") 
@@ -12,11 +12,14 @@ onready var map3= preload("res://maps/map3.tscn")
 onready var map4= preload("res://maps/map4.tscn") 
 onready var rivers= preload("res://maps/lava_rivers.tscn") 
 
+onready var map5= preload("res://maps/map5.tscn") 
+
 onready var enemy= preload("res://objects/enemies/enemy.tscn")
 onready var snow_enemy= preload("res://objects/enemies/snow_enemy.tscn")
 onready var ball= preload("res://objects/enemies/ball.tscn")
 onready var fire_ball= preload("res://objects/enemies/fire_ball.tscn")
 onready var target_node= preload("res://objects/enemies/target.tscn")
+onready var ghost= preload("res://objects/enemies/ghost.tscn")
 
 #pause menu things
 onready var pause_menu= preload("res://menus/pause_menu.tscn").instance()
@@ -24,7 +27,7 @@ onready var pause_menu= preload("res://menus/pause_menu.tscn").instance()
 #level selection/diff.
 onready var map_current= Node
 onready var difficulty= SceneGlobals.difficulty # 1=easy 2=normal 3=hard 4=impossible 
-onready var level = SceneGlobals.level # 0=plains (OG) 1=Highway 2=Snow field
+onready var level = SceneGlobals.level # 0=plains (OG) 1=Highway 2=Snow field 3=Volcano 4=Phantom plains
 
 onready var map_object_layer= Node
 onready var scorecounter= get_node("GUI/scorecounter")
@@ -40,6 +43,7 @@ onready var random_y= rand_range(0.0,12.0)
 onready var prop_id = 0
 onready var temp_tm = 0
 onready var temp_tm2 = 0
+onready var temp_tm3 = 0
 onready var illegal_positions=[]
 
 onready var item_delay=OS.get_system_time_secs()+7
@@ -77,7 +81,7 @@ func spawn_player():
 
 func spawn_hole():
 	hole_position=get_rnd_vector2D("")
-	if (map_object_layer.get_cell(hole_position.x, hole_position.y)>=0 and map_object_layer.get_cell(hole_position.x, hole_position.y)<=4) or (map_object_layer.get_cell(hole_position.x, hole_position.y)>=10):
+	if (map_object_layer.get_cell(hole_position.x, hole_position.y)>=0 and map_object_layer.get_cell(hole_position.x, hole_position.y)<=4) or ((map_object_layer.get_cell(hole_position.x, hole_position.y)>=10)and(map_object_layer.get_cell(hole_position.x, hole_position.y)!=14)):
 		update_holes(map_object_layer)
 		spawn_hole()
 	map_object_layer.set_cell(hole_position.x, hole_position.y, 0)
@@ -113,6 +117,12 @@ func spawn_enemy(enemy_index,direction_,enemy_x_,enemy_y_):
 		new_enemy.enemy_type=3
 		new_target.position=Vector2(enemy_x_*64+32,enemy_y_*64+32)
 		new_target.enemy_type=4
+	elif enemy_index==3:
+		var new_enemy=ghost.instance()
+		enemies.add_child(new_enemy)
+		new_enemy.position=get_rnd_vector2D("player")
+		new_enemy.moves=OS.get_system_time_msecs()+1520*rand_range(2,5)
+		new_enemy.enemy_type=5
 		
 	
 func spawn_enemies(redo_):
@@ -157,6 +167,11 @@ func spawn_enemies(redo_):
 				hole_position=get_rnd_vector2D("snow_man")
 				spawn_enemy(2,-1,hole_position.x,hole_position.y)
 				fire_balls+=1
+		if enemy_used[6]==true and redo_==false:
+			var spoop=0
+			while spoop<2+difficulty:
+				spawn_enemy(3,0,0,0)
+				spoop+=1
 				
 
 
@@ -177,6 +192,9 @@ func get_enemy_collision():
 
 		if enemy_used[5]==true and enemy_.enemy_type==4:
 			update_fire_target(enemy_)
+
+		if enemy_used[6]==true and enemy_.enemy_type==5:
+			update_ghost_enemy(enemy_)
 
 		if enemy_.collided_with_player == true:
 
@@ -203,7 +221,7 @@ func update_car_enemy(enemy_):
 func update_snow_ball_enemy(enemy_):
 	enemy_.rotation+=1+difficulty
 
-	if enemy_.position==enemy_.target or enemy_.moves>=69:
+	if enemy_.position==enemy_.target or enemy_.moves>=72:
 		enemy_.position.x=200*64
 		enemy_.can_spawn=true
 
@@ -253,6 +271,25 @@ func update_fire_enemy(enemy_):
 		enemy_.linked_node.can_spawn=true
 		update_fire_target(enemy_.linked_node)
 		
+func update_ghost_enemy(enemy_):
+	if player.player_x>enemy_.position.x:
+		enemy_.position.x+=0.1+difficulty/2
+	if player.player_x<enemy_.position.x:
+		enemy_.position.x-=0.1+difficulty/2
+	if player.player_y>enemy_.position.y:
+		enemy_.position.y+=0.1+difficulty/2
+	if player.player_y<enemy_.position.y:
+		enemy_.position.y-=0.1+difficulty/2
+
+	if enemy_.moves<=OS.get_system_time_msecs():
+		if enemy_.get_child(0).get_animation()=="default":
+			enemy_.get_child(0).play("poofo")
+			enemy_.moves=OS.get_system_time_msecs()+240
+		else:
+			enemy_.position=get_rnd_vector2D("player")
+			enemy_.moves=OS.get_system_time_msecs()+1520*rand_range(2,5)
+			enemy_.get_child(0).play("default")
+	
 
 func update_holes(map_):
 	for dummy_1 in range(20):
@@ -294,30 +331,41 @@ func replace_item(map_,index_,index_2):
 func do_physics():
 	if get_colider(map_object_layer)>1:
 		if get_colider(map_object_layer)<=4:
-			if player.bridges>0:
-				replace_item(map_object_layer,2,9)
-				replace_item(map_object_layer,3,9)
-				replace_item(map_object_layer,4,9)
+			if player.bridges>0 and player.player_state!=4:
+				replace_item(map_object_layer,2,14)
+				replace_item(map_object_layer,3,14)
+				replace_item(map_object_layer,4,14)
 				player.bridges-=1
 			else:
-				player.player_state=1
-		elif get_colider(map_object_layer)==5:
-			player.speed=-1
-			player.player_state=2
-			replace_item(map_object_layer,5,-1)
-			temp_tm=OS.get_system_time_secs()+4
-		elif get_colider(map_object_layer)==6:
-			player.bridges+=1
-			replace_item(map_object_layer,6,-1)
-		elif get_colider(map_object_layer)==7:
-			player.player_state=3
-			player.speed=2
-			temp_tm2=OS.get_system_time_secs()+5
-			replace_item(map_object_layer,7,-1)
-		elif get_colider(map_object_layer)==8:
-			player.score+=10000
-			replace_item(map_object_layer,8,-1)
-		elif get_colider(map_object_layer)>=10:
+				if player.player_state!=4:
+					player.player_state=1
+		if player.player_state!=4:
+			if get_colider(map_object_layer)==5:
+				player.speed=-1
+				player.player_state=2
+				replace_item(map_object_layer,5,-1)
+				temp_tm=OS.get_system_time_secs()+6
+			elif get_colider(map_object_layer)==6:
+				player.bridges+=1
+				replace_item(map_object_layer,6,-1)
+			elif get_colider(map_object_layer)==7:
+				player.player_state=3
+				player.speed=2
+				temp_tm2=OS.get_system_time_secs()+6
+				replace_item(map_object_layer,7,-1)
+			elif get_colider(map_object_layer)==8:
+				player.score+=10000
+				replace_item(map_object_layer,8,-1)
+			elif get_colider(map_object_layer)==9:
+				player.player_state=4
+				player.speed=1
+				player.sprite.play("shield")
+				temp_tm3=OS.get_system_time_secs()+6
+				replace_item(map_object_layer,9,-1)
+			elif get_colider(map_object_layer)==13:
+				#free item slot
+				replace_item(map_object_layer,13,-1)
+		if get_colider(map_object_layer)>=10 && get_colider(map_object_layer)<=12:
 			player.player_state=1
 	if enemy_used[0]==true:
 		get_enemy_collision()
@@ -326,28 +374,33 @@ func do_physics():
 func add_object(map_,str_):
 	if str_=="grass":
 		prop_id=1
-	elif str_=="snow_grass":
-		prop_id=6
-	elif str_=="rocks":
-		prop_id=8
-	elif str_=="item":
-		prop_id=round(rand_range(5.0,8.0))
-	else:
-		#Invalid prop
-		pass
+		for _dummy_1 in range(round(rand_range(7.0,12.0))):
+			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
+			map_.set_cell(hole_position.x-1, hole_position.y, 12)
 	if str_=="snow_grass":
 		for _dummy_1 in range(round(rand_range(18.0,28.0))):
 			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
-			map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
+			map_.set_cell(hole_position.x-1, hole_position.y, 6)
 	elif str_=="item":
+		prop_id=round(rand_range(5.0,10.0))
+		if prop_id>=9.2:
+			prop_id=13
 		hole_position=get_rnd_vector2D("")
 		if map_.get_cell(hole_position.x, hole_position.y)==-1:#check if tile is empty
 			map_.set_cell(hole_position.x, hole_position.y, prop_id)
 	elif str_=="rocks":
 		for _dummy_1 in range(round(rand_range(7.0,12.0))):
 			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
-			map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
-	elif str_!="item":
+			map_.set_cell(hole_position.x-1, hole_position.y, 8)
+	elif str_=="spoopy_grass":
+		for _dummy_1 in range(round(rand_range(18.0,28.0))):
+			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
+			map_.set_cell(hole_position.x-1, hole_position.y, 10)
+	elif str_=="grave":
+		for _dummy_1 in range(round(rand_range(8.0,13.0))):
+			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
+			map_.set_cell(hole_position.x-1, hole_position.y, 12)
+	elif str_!="item":#this needs to be last 
 			for _dummy_1 in range(round(rand_range(25.0,35.0))):
 				hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
 				map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
@@ -359,6 +412,7 @@ func game_over():
 	game_over_=true
 
 func _ready():
+	#NOTOUCH#
 	game_over_screen.visible = false
 	
 	for _i in enemy_types:
@@ -376,12 +430,12 @@ func gen_map(map_index):
 		map_current=map.instance()
 	elif map_index==1:
 		map_current=map2.instance()
-		scorecounter.set("custom_colors/font_color", Color8(25,50,220,255))
+		scorecounter.set("custom_colors/font_color", Color8(25,60,245,255))
 		enemy_used[1]=true
 
 	elif map_index==2:
 		map_current=map3.instance()
-		scorecounter.set("custom_colors/font_color", Color8(25,50,220,255))
+		scorecounter.set("custom_colors/font_color", Color8(25,60,245,255))
 		enemy_used[2]=true
 		enemy_used[3]=true
 	elif map_index==3:
@@ -398,12 +452,9 @@ func gen_map(map_index):
 
 		enemy_used[4]=true
 		enemy_used[5]=true
-	elif map_index==5:
-		map_current=map.instance()
-		enemy_used[1]=true
-		enemy_used[2]=true
-		enemy_used[3]=true
-		
+	elif map_index==4:
+		map_current=map5.instance()
+		enemy_used[6]=true
 
 	self.add_child(map_current)
 	map_object_layer= map_current.get_child(0)
@@ -411,13 +462,16 @@ func gen_map(map_index):
 	gen_props(map_current,level)
 	
 func gen_props(map_,map_index):
-	if map_index==0 or map_index==5:
-		#map id 5=custom level
+	if map_index==0:
 		add_object(map_,"grass")
 	elif map_index==2:
 		add_object(map_,"snow_grass")
 	elif map_index==3:
 		add_object(map_,"rocks")
+	elif map_index==4:
+		add_object(map_,"spoopy_grass")
+		add_object(map_object_layer,"grave")
+	
 
 
 func _process(_delta):
@@ -466,6 +520,11 @@ func _process(_delta):
 			if temp_tm2<=OS.get_system_time_secs():
 				player.player_state=0
 				player.speed=1 
+		elif player.player_state==4:
+			map_object_layer.set_cell(player.player_x/64,player.player_y/64,-1)
+			if temp_tm3<=OS.get_system_time_secs():
+				player.sprite.play("default")
+				player.player_state=0
 
 		do_physics()
 	

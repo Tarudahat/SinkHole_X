@@ -7,7 +7,6 @@
 [ext_resource path="res://menus/game_over.tscn" type="PackedScene" id=5]
 [ext_resource path="res://assets/GUI/touch_button_menu.png" type="Texture" id=6]
 
-
 [sub_resource type="CircleShape2D" id=1]
 radius = 100.0
 

@@ -21,10 +21,10 @@ func _input(_event):
 			selected_button=1	
 		#cursor
 		if (selected_button==0):
-			cursor.position=Vector2(cursor.position.x,248)
+			cursor.position=Vector2(cursor.position.x,435)
 
 		if (selected_button==1):
-			cursor.position=Vector2(cursor.position.x,513)
+			cursor.position=Vector2(cursor.position.x,435+380)
 
 		#accepting input for the buttons
 		if selected_button==1 and (button_quit.pressed==true or Input.is_action_just_pressed("in_accept")):

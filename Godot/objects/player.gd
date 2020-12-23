@@ -6,6 +6,7 @@ onready var player_y=0
 onready var player_state=0
 onready var bridges=0
 onready var speed=1
+onready var sprite=self.get_child(0)
 
 func _process(_delta):
 	if Input.is_action_pressed("in_right"):

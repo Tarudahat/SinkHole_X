@@ -5,6 +5,7 @@
 [ext_resource path="res://assets/GUI/arrow_button.png" type="Texture" id=3]
 [ext_resource path="res://assets/GUI/menu_panel.png" type="Texture" id=4]
 [ext_resource path="res://menus/title_menu.gd" type="Script" id=5]
+[ext_resource path="res://assets/font.tres" type="DynamicFont" id=6]
 
 [sub_resource type="DynamicFont" id=1]
 size = 60
@@ -22,10 +23,6 @@ font_data = ExtResource( 1 )
 size = 72
 font_data = ExtResource( 1 )
 
-[sub_resource type="DynamicFont" id=7]
-size = 50
-font_data = ExtResource( 1 )
-
 [node name="title_menu" type="Node2D"]
 script = ExtResource( 5 )
 
@@ -39,8 +36,9 @@ __meta__ = {
 
 [node name="level_select_label" type="Label" parent="background"]
 margin_left = 432.0
+margin_top = -8.0
 margin_right = 864.0
-margin_bottom = 128.0
+margin_bottom = 120.0
 custom_fonts/font = SubResource( 1 )
 text = "Level select"
 valign = 1
@@ -50,9 +48,9 @@ __meta__ = {
 
 [node name="thumbnail" type="TextureRect" parent="background"]
 margin_left = 384.0
-margin_top = 200.0
+margin_top = 198.112
 margin_right = 1664.0
-margin_bottom = 968.0
+margin_bottom = 966.112
 rect_scale = Vector2( 0.4, 0.4 )
 texture = ExtResource( 2 )
 stretch_mode = 5
@@ -91,9 +89,8 @@ __meta__ = {
 }
 
 [node name="level_name" type="Label" parent="background"]
-margin_left = 416.0
 margin_top = 640.0
-margin_right = 860.0
+margin_right = 1278.0
 margin_bottom = 716.0
 custom_fonts/font = SubResource( 6 )
 text = "Plains"
@@ -108,9 +105,22 @@ margin_top = 640.0
 margin_right = 1144.0
 margin_bottom = 720.0
 mouse_default_cursor_shape = 2
-custom_fonts/font = SubResource( 7 )
+custom_fonts/font = ExtResource( 6 )
 text = "Ok"
 flat = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="shadow" type="Label" parent="background/button_ok"]
+show_behind_parent = true
+margin_left = 30.25
+margin_top = 20.25
+margin_right = 152.25
+margin_bottom = 109.25
+custom_fonts/font = ExtResource( 6 )
+custom_colors/font_color = Color( 0.309804, 0.309804, 0.309804, 1 )
+text = "Ok"
 __meta__ = {
 "_edit_use_anchors_": false
 }

@@ -7,13 +7,14 @@ onready var button_cancel = get_node("background/button_cancel")
 onready var diff_name = get_node("background/diff_name")
 onready var selected_diff=2
 onready var change_info=true
-onready var diffs=["Baby mode","Normal","Hard","Impossible"]
+onready var diffs=["Sloth","Normal","Hard","Impossible"]
 
-func _input(_event):
-	if button_left.pressed==true or Input.is_action_pressed("in_left"):
+func _input(event):
+	
+	if (button_left.pressed==true and (event is InputEventMouseButton )) or (Input.is_action_just_released("in_left")==true) :
 		selected_diff-=1
 		change_info=true
-	elif button_right.pressed==true or Input.is_action_pressed("in_right"):
+	elif (button_right.pressed==true and (event is InputEventMouseButton)) or (Input.is_action_just_released("in_right")==true) :
 		selected_diff+=1
 		change_info=true	
 
