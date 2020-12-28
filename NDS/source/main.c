@@ -1,4 +1,3 @@
-
 #include <nds.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,13 +5,14 @@
 
 #include <nf_lib.h>
 #include "structs.c"
+#include "rivers.h"
 
 const int map_layer = {3};
 const int item_layer = {2};
 const int menu_layer = {1};
 const int text_layer = {0};
 
-struct Player player = {0, "Yikes\ndeath on frame 1", 0, 0, 0, 0, 1, 0};
+struct Player player = {0, "Score:0             ", 0, 0, 0, 0, 1, 0};
 
 struct Timer hole_timer;
 struct Timer update_hole_timer;
@@ -39,6 +39,7 @@ bool paused = {false};
 bool enemies_used = {false};
 bool car_enemies_used = {false};
 bool snow_enemies_used = {false};
+bool fire_enemies_used = {false};
 
 bool enemies_deleted = {false};
 bool spawn_offset = {false};
@@ -119,12 +120,14 @@ void init(void)
 	NF_LoadTiledBg("BG/map0", "map0", 512, 256);
 	NF_LoadTiledBg("BG/map1", "map1", 512, 256);
 	NF_LoadTiledBg("BG/map2", "map2", 512, 256);
+	NF_LoadTiledBg("BG/map3", "map3", 512, 256);
 
 	//menus
 	NF_LoadTiledBg("menu/main_menu_touch", "main_menu_touch", 256, 256);
 	NF_LoadTiledBg("menu/main_menu0", "main_menu0", 256, 256);
 	NF_LoadTiledBg("menu/main_menu1", "main_menu1", 256, 256);
 	NF_LoadTiledBg("menu/main_menu2", "main_menu2", 256, 256);
+	NF_LoadTiledBg("menu/main_menu3", "main_menu3", 256, 256);
 	NF_LoadTiledBg("menu/clear_screen", "clear_screen", 256, 256);
 	NF_LoadTiledBg("menu/game_over", "game_over", 256, 256);
 	NF_LoadTiledBg("menu/game_over_touch", "game_over_touch", 256, 256);
@@ -143,6 +146,8 @@ void init(void)
 	NF_LoadTiledBg("menu/temp_map", "temp_screen", 256, 256);
 	NF_CreateTiledBg(1, menu_layer, "main_menu_touch");
 }
+
+int get_player_tile(u8 layer);
 
 void render(void)
 {
@@ -221,7 +226,11 @@ int even(int input_num)
 }
 
 void make_16x16_tile(u16 tile_id, u8 layer, s16 x, s16 y, u8 mode)
-{ //mode 1 => tile map position | mode 0 => on screen for player
+{ //mode 1 => tile map position | mode 0 => on screen for player | mode 2 => empty tile
+	if (tile_id == 0)
+	{
+		mode = 2;
+	}
 
 	switch (mode)
 	{
@@ -246,6 +255,23 @@ void make_16x16_tile(u16 tile_id, u8 layer, s16 x, s16 y, u8 mode)
 		NF_SetTileOfMap(0, layer, x, y + 1, tile_id + 2);
 		NF_SetTileOfMap(0, layer, x + 1, y + 1, tile_id + 3);
 		break;
+	case 2:
+		NF_SetTileOfMap(0, layer, x, y, 0);
+		NF_SetTileOfMap(0, layer, x + 1, y, 0);
+		NF_SetTileOfMap(0, layer, x, y + 1, 0);
+		NF_SetTileOfMap(0, layer, x + 1, y + 1, 0);
+		break;
+	}
+}
+
+void array2river(u8 layer, u8 river_, u8 array[10][12][20])
+{
+	for (u8 i_x = 0; i_x < 20; i_x++)
+	{
+		for (u8 i_y = 0; i_y < 12; i_y++)
+		{
+			make_16x16_tile(array[river_][i_y][i_x], layer, i_x * 2, i_y * 2, 1);
+		}
 	}
 }
 
@@ -388,6 +414,10 @@ void spawn_player()
 	NF_MoveSprite(0, 0, player.player_x, player.player_y);
 	NF_ScrollBg(0, item_layer, scroll_x, 0);
 	NF_ScrollBg(0, map_layer, scroll_x, 0);
+	if (get_player_tile(item_layer) >= 1)
+	{
+		spawn_player();
+	}
 }
 
 void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
@@ -516,7 +546,7 @@ void update_car_enemy(u8 enemy_)
 		if ((car_enemies.enemy_y[enemy_] <= 192) & (car_enemies.enemy_y[enemy_] >= 0))
 		{
 
-			make_16x16_tile(50, item_layer, even(car_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), car_enemies.enemy_y[enemy_] / 8 + 1, 1);
+			make_16x16_tile(0, item_layer, even(car_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), car_enemies.enemy_y[enemy_] / 8 + 1, 1);
 		}
 	}
 }
@@ -593,7 +623,7 @@ void update_snow_enemy(u8 enemy_)
 	NF_MoveSprite(0, snow_enemies.enemy_id[enemy_], snow_enemies.enemy_x[enemy_], snow_enemies.enemy_y[enemy_]);
 	if ((snow_enemies.enemy_x[enemy_] <= 256 * 2) & (even(snow_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1) >= 0))
 	{
-		make_16x16_tile(50, item_layer, even(snow_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), even(snow_enemies.enemy_y[enemy_] / 8) + 4, 1);
+		make_16x16_tile(0, item_layer, even(snow_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), even(snow_enemies.enemy_y[enemy_] / 8) + 4, 1);
 	}
 }
 
@@ -668,7 +698,7 @@ bool is_in(u8 input, u8 array[])
 void spawn_enemies()
 {
 	u8 rnd_[2];
-	bool illegal_position[22][14];
+	bool illegal_position[22][22];
 	u8 enemy = {0};
 	u8 i = {0};
 
@@ -793,12 +823,19 @@ void add_object(u8 layer_, char *str_)
 			make_16x16_tile(6, layer_, even(rand_(80)), even(rand_(48)), 1);
 		}
 	}
+	else if (strcmp(str_, "rocks") == 0)
+	{
+		for (u8 i = 0; i < (rand_(5) + 12); i++)
+		{
+			make_16x16_tile(6, layer_, even(rand_(80)), even(rand_(48)), 1);
+		}
+	}
 	else if (strcmp(str_, "item") == 0)
 	{
 		u16 rnd_x = even(rand_(80));
 		u16 rnd_y = even(rand_(48));
 
-		if ((NF_GetTileOfMap(0, item_layer, rnd_x, rnd_y) == 50) || (NF_GetTileOfMap(0, item_layer, rnd_x, rnd_y) == 0))
+		if ((NF_GetTileOfMap(0, item_layer, rnd_x, rnd_y) == 75) || (NF_GetTileOfMap(0, item_layer, rnd_x, rnd_y) == 0))
 		{
 			make_16x16_tile(prop_id, layer_, rnd_x, rnd_y, 1);
 		}
@@ -819,6 +856,12 @@ void gen_map(u8 map_index)
 	else if (map_index == 2)
 	{
 		add_object(map_layer, "snow_grass");
+	}
+	else if (map_index == 3)
+	{
+		add_object(map_layer, "rocks");
+		u8 rnd_river = (int)((rand_(50) + rand_(40)) / 10);
+		array2river(item_layer, rnd_river, rivers);
 	}
 }
 
@@ -876,6 +919,7 @@ void reset_enemies()
 	enemies_used = false;
 	car_enemies_used = false;
 	snow_enemies_used = false;
+	fire_enemies_used = false;
 	total_enemies = 0;
 	//clear enemy data
 	car_enemies = empty_group;
@@ -894,6 +938,11 @@ void reset_enemies()
 	case 2:
 		snow_enemies_used = true;
 		//|-> refers to snow men & balls
+		enemies_used = true;
+		break;
+	case 3:
+		fire_enemies_used = true;
+		//|-> refers to targets & fire balls
 		enemies_used = true;
 		break;
 	}
@@ -928,9 +977,12 @@ void reset()
 	case 2:
 		clear_map(map_layer, 1, 2);
 		break;
+	case 3:
+		clear_map(map_layer, 1, 2);
+		break;
 	}
 	clear_map(item_layer, 0, 0);
-	//CRASH!!!
+
 	gen_map(level);
 	swiWaitForVBlank();
 	//-------
@@ -963,13 +1015,13 @@ void main_menu(void)
 			{
 				level++;
 			}
-			if (level > 2)
+			if (level > 3)
 			{
 				level = 0;
 			}
 			else if (level < 0)
 			{
-				level = 2;
+				level = 3;
 			}
 
 			sprintf(map_name, "main_menu%i", level);
@@ -1069,7 +1121,7 @@ void spawn_hole()
 	hole_x = even(rand_(80));
 	hole_y = even(rand_(48));
 
-	if (NF_GetTileOfMap(0, item_layer, hole_x, hole_y) > 8 && NF_GetTileOfMap(0, item_layer, hole_x, hole_y) < 20)
+	if ((NF_GetTileOfMap(0, item_layer, hole_x, hole_y) > 8 && NF_GetTileOfMap(0, item_layer, hole_x, hole_y) < 20) || (NF_GetTileOfMap(0, item_layer, hole_x, hole_y) >= 49))
 	{
 		update_holes();
 		spawn_hole();
@@ -1121,38 +1173,42 @@ void do_physics()
 				}
 			}
 		}
+		if (get_player_tile(item_layer) >= 49 && get_player_tile(item_layer) < 75)
+		{
+			player.player_state = 1;
+		}
 		if (player.player_state != 4)
 		{
 			if (get_player_tile(item_layer) >= 21 && get_player_tile(item_layer) <= 24)
 			{
 				player.speed = 2;
 				player.player_state = 3;
-				replace_item(21, 50);
+				replace_item(21, 0);
 				speed_item.delay = current_sec + 6;
 			}
 			else if (get_player_tile(item_layer) >= 33 && get_player_tile(item_layer) <= 36)
 			{
 				player.speed = -1;
 				player.player_state = 2;
-				replace_item(33, 50);
+				replace_item(33, 0);
 				invert_item.delay = current_sec + 6;
 			}
 			else if (get_player_tile(item_layer) >= 29 && get_player_tile(item_layer) <= 32)
 			{
 				player.bridges += 1;
-				replace_item(29, 50);
+				replace_item(29, 0);
 			}
 			else if (get_player_tile(item_layer) >= 25 && get_player_tile(item_layer) <= 28)
 			{
 				player.score += 10000;
-				replace_item(25, 50);
+				replace_item(25, 0);
 			}
 			else if (get_player_tile(item_layer) >= 37 && get_player_tile(item_layer) <= 40)
 			{
 				player.player_state = 4;
 				player.speed = 1;
 				player.anim_delay = current_msec + 142;
-				replace_item(37, 50);
+				replace_item(37, 0);
 				roller.delay = current_sec + 6;
 				create_sprite(0, 0, 4);
 				NF_MoveSprite(0, 0, player.player_x, player.player_y);
@@ -1286,7 +1342,7 @@ int main(void)
 			case 4:
 				if (player.player_x <= 256 && player.player_y <= 192)
 				{
-					make_16x16_tile(50, item_layer, player.player_x, player.player_y, 0);
+					make_16x16_tile(0, item_layer, player.player_x, player.player_y, 0);
 				}
 
 				if (player.anim_delay <= current_msec)

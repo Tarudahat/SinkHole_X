@@ -397,7 +397,7 @@ func add_object(map_,str_):
 			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
 			map_.set_cell(hole_position.x-1, hole_position.y, 10)
 	elif str_=="grave":
-		for _dummy_1 in range(round(rand_range(8.0,13.0))):
+		for _dummy_1 in range(round(rand_range(8.0,11.0))):
 			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
 			map_.set_cell(hole_position.x-1, hole_position.y, 12)
 	elif str_!="item":#this needs to be last 
