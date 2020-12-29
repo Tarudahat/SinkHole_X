@@ -22,7 +22,7 @@ animations = [ {
 } ]
 
 [sub_resource type="CapsuleShape2D" id=4]
-radius = 7.81472
+radius = 9.2177
 height = 10.1397
 
 [node name="enemy" type="Area2D"]
@@ -35,7 +35,7 @@ frame = 1
 playing = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2( 0.153866, 27.3436 )
+position = Vector2( 0.153866, 23.9762 )
 rotation = 1.5708
 shape = SubResource( 4 )
 [connection signal="body_entered" from="." to="." method="_on_enemy_body_entered"]

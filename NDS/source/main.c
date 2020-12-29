@@ -32,6 +32,7 @@ u8 scroll_x;
 u8 prev_scroll_x;
 s8 enemy_scroll;
 s16 big_enemy_scroll;
+u8 x_offset = 0;
 
 bool reset_game = {false};
 bool paused = {false};
@@ -48,6 +49,8 @@ struct enemy_group car_enemies;
 
 struct enemy_group snow_enemies;
 struct enemy_group ball_enemies;
+struct enemy_group fire_enemies;
+struct enemy_group shadow_enemies;
 
 struct enemy_group empty_group;
 
@@ -76,6 +79,7 @@ void init(void)
 	//load assets
 	//Sprites							|->the img
 	//					name     , ram-slot  , w, h
+	//top-screen
 	NF_LoadSpriteGfx("sprites/car", 0, 16, 16);
 	NF_LoadSpritePal("sprites/car", 0);
 
@@ -91,6 +95,13 @@ void init(void)
 	NF_LoadSpriteGfx("sprites/car_roller", 4, 16, 16);
 	NF_LoadSpritePal("sprites/car_roller", 4);
 
+	NF_LoadSpriteGfx("sprites/fire_ball", 6, 16, 16);
+	NF_LoadSpritePal("sprites/fire_ball", 6);
+
+	NF_LoadSpriteGfx("sprites/shadow", 7, 16, 16);
+	NF_LoadSpritePal("sprites/shadow", 7);
+
+	//touch screen
 	NF_LoadSpriteGfx("sprites/cursor", 5, 64, 64); //144 32
 	NF_LoadSpritePal("sprites/cursor", 5);
 
@@ -100,6 +111,7 @@ void init(void)
 
 	//                     |-> img it will be using		|-> 0-128 slots to contain sprite
 	//            screen, ram-slot,                  Vram-slot,
+	//top-screen
 	NF_VramSpriteGfx(0, 1, 1, false);
 	NF_VramSpritePal(0, 1, 1);
 
@@ -112,6 +124,13 @@ void init(void)
 	NF_VramSpriteGfx(0, 4, 4, false);
 	NF_VramSpritePal(0, 4, 4);
 
+	NF_VramSpriteGfx(0, 6, 6, false);
+	NF_VramSpritePal(0, 6, 6);
+
+	NF_VramSpriteGfx(0, 7, 7, false);
+	NF_VramSpritePal(0, 7, 7);
+
+	//touch screen
 	NF_VramSpriteGfx(1, 5, 0, false);
 	NF_VramSpritePal(1, 5, 0);
 	//BG
@@ -309,7 +328,7 @@ void create_sprite(u8 screen, u8 index, u8 asset)
 {
 	NF_CreateSprite(screen, index, asset, asset, 0, 0);
 	NF_EnableSpriteRotScale(screen, index, index, true); //using index for arg. 3 so that they have separate rotations
-	NF_SpriteLayer(screen, index, item_layer);
+	NF_SpriteLayer(screen, index, menu_layer);
 }
 
 void player_movement(int keys)
@@ -387,6 +406,7 @@ void spawn_player()
 
 	//create player sprite
 	create_sprite(0, 0, 0);
+	NF_SpriteLayer(0, 0, item_layer);
 
 	player.player_x = rand_(19) * 16 + 8;
 	player.player_y = rand_(12) * 16 + 8;
@@ -420,13 +440,21 @@ void spawn_player()
 	}
 }
 
+int inworld(s32 input)
+{
+	s32 output;
+	output = input + (enemy_scroll * abs(player.speed)) + big_enemy_scroll;
+	return output;
+}
+
 void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 {
-	u8 x_offset = 0;
+	x_offset = 0;
 	if (spawn_offset != false)
 	{
 		x_offset = 4;
 	}
+
 	total_enemies++;
 	enemies_deleted = false;
 	if (enemy_type == 0)
@@ -478,6 +506,32 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 
 		NF_MoveSprite(0, total_enemies, ball_enemies.enemy_x[ball_enemies.group_members], ball_enemies.enemy_y[ball_enemies.group_members]);
 	}
+	else if (enemy_type == 2)
+	{
+		shadow_enemies.group_members++;
+
+		shadow_enemies.enemy_id[shadow_enemies.group_members] = total_enemies;
+
+		shadow_enemies.enemy_x[shadow_enemies.group_members] = enemy_x_ * 16 + 8 + x_offset;
+		shadow_enemies.enemy_y[shadow_enemies.group_members] = enemy_y_ * 16 + 8;
+
+		create_sprite(0, total_enemies, 7);
+
+		NF_MoveSprite(0, total_enemies, shadow_enemies.enemy_x[shadow_enemies.group_members], shadow_enemies.enemy_y[shadow_enemies.group_members]);
+
+		total_enemies++;
+
+		fire_enemies.group_members++;
+
+		fire_enemies.enemy_id[fire_enemies.group_members] = total_enemies;
+
+		fire_enemies.enemy_x[fire_enemies.group_members] = shadow_enemies.enemy_x[shadow_enemies.group_members];
+		fire_enemies.enemy_y[fire_enemies.group_members] = shadow_enemies.enemy_y[shadow_enemies.group_members] - (32 + rand_(5) * 16);
+
+		create_sprite(0, total_enemies, 6);
+
+		NF_MoveSprite(0, total_enemies, fire_enemies.enemy_x[fire_enemies.group_members], fire_enemies.enemy_y[fire_enemies.group_members]);
+	}
 }
 
 void update_enemy_scroll()
@@ -497,13 +551,6 @@ void update_enemy_scroll()
 	}
 
 	prev_scroll_x = scroll_x;
-}
-
-int inworld(s32 input)
-{
-	s32 output;
-	output = input + (enemy_scroll * abs(player.speed)) + big_enemy_scroll;
-	return output;
 }
 
 void update_car_enemy(u8 enemy_)
@@ -627,6 +674,56 @@ void update_snow_enemy(u8 enemy_)
 	}
 }
 
+void update_shadow_enemy(u8 enemy_)
+{
+
+	shadow_enemies.enemy_x[enemy_] = inworld(shadow_enemies.enemy_x[enemy_]);
+	NF_SpriteFrame(0, shadow_enemies.enemy_id[enemy_], 0);
+	if (frame_in_sec % 2 == 1)
+	{
+		NF_SpriteFrame(0, shadow_enemies.enemy_id[enemy_], 1);
+	}
+
+	if (shadow_enemies.can_spawn[enemy_] == true)
+	{
+		shadow_enemies.enemy_x[enemy_] = inworld(even((rand_(39) + 1) * 16 + 8 + enemy_scroll));
+		shadow_enemies.enemy_y[enemy_] = (rand_(20) + 1) * 16 + 8;
+		fire_enemies.enemy_y[enemy_] = shadow_enemies.enemy_y[enemy_] - (48 + rand_(4) * 16);
+		shadow_enemies.can_spawn[enemy_] = false;
+	}
+	NF_MoveSprite(0, shadow_enemies.enemy_id[enemy_], inworld(shadow_enemies.enemy_x[enemy_]), shadow_enemies.enemy_y[enemy_]);
+}
+
+void update_fire_enemy(u8 enemy_)
+{
+	fire_enemies.enemy_x[enemy_] = shadow_enemies.enemy_x[enemy_]; //!
+	if (shadow_enemies.enemy_y[enemy_] - 8 >= fire_enemies.enemy_y[enemy_])
+	{
+		if (frame_in_sec % 3 > 0)
+		{
+			fire_enemies.enemy_y[enemy_]++;
+		}
+	}
+	else if (shadow_enemies.enemy_y[enemy_] - 8 <= fire_enemies.enemy_y[enemy_])
+	{
+		shadow_enemies.can_spawn[enemy_] = true;
+		update_shadow_enemy(enemy_);
+	}
+
+	//animation
+	if (fire_enemies.anim_delay <= current_msec)
+	{
+		fire_enemies.current_frame++;
+		if (fire_enemies.current_frame >= 2)
+			fire_enemies.current_frame = 0;
+		fire_enemies.anim_delay = current_msec + 200;
+	}
+
+	NF_SpriteFrame(0, fire_enemies.enemy_id[enemy_], fire_enemies.current_frame);
+
+	NF_MoveSprite(0, fire_enemies.enemy_id[enemy_], fire_enemies.enemy_x[enemy_], fire_enemies.enemy_y[enemy_]);
+}
+
 bool touch_box(s32 x, s32 y, u16 sizex, u16 sizey)
 {
 	touchRead(&touchXY);
@@ -637,7 +734,7 @@ bool touch_box(s32 x, s32 y, u16 sizex, u16 sizey)
 	return false;
 }
 
-bool sprites_collide(s32 x1, s32 y1, s32 x2, s32 y2, u8 size1, u8 size2, u8 offsetx1, u8 offsety1, u8 offsetx2, u8 offsety2)
+bool sprites_collide(s32 x1, s32 y1, s32 x2, s32 y2, s16 size1, s16 size2, s16 offsetx1, s16 offsety1, s16 offsetx2, s16 offsety2)
 {
 	if ((((x1 + offsetx1 >= x2 + offsetx2) && (x1 + offsetx1 <= x2 + size2 + offsetx2)) || ((x1 + size1 + offsetx1 >= x2 + offsetx2) && (x1 + size1 + offsetx1 <= x2 + size2 + offsetx2))) && (((y1 + offsety1 >= y2 + offsety2) && (y1 + offsety1 <= y2 + size2 + offsety2)) || ((y1 + size1 + offsety1 >= y2 + offsety2) && (y1 + size1 + offsety1 <= y2 + size2 + offsety2))))
 	{
@@ -675,9 +772,25 @@ void get_enemy_collision()
 			}
 
 			update_snow_ball_enemy(enemy_index);
-			if (sprites_collide(player.player_x, player.player_y, ball_enemies.enemy_x[enemy_index], ball_enemies.enemy_y[enemy_index], 13, 8, 2, 1, 0, 0) == true)
+			if (sprites_collide(player.player_x, player.player_y, ball_enemies.enemy_x[enemy_index], ball_enemies.enemy_y[enemy_index], 13, 8, 2, 1, 0, 4) == true)
 			{
 				player.player_state = 1;
+			}
+		}
+	}
+	if (fire_enemies_used == true)
+	{
+		for (u8 enemy_index = 1; enemy_index <= fire_enemies.group_members; enemy_index++)
+		{
+			update_fire_enemy(enemy_index);
+			update_shadow_enemy(enemy_index);
+
+			if (sprites_collide(player.player_x, player.player_y, shadow_enemies.enemy_x[enemy_index], shadow_enemies.enemy_y[enemy_index], 13, 10, 2, 1, 2, 4) == true)
+			{
+				if (sprites_collide(player.player_x, player.player_y, fire_enemies.enemy_x[enemy_index], fire_enemies.enemy_y[enemy_index], 13, 10, 2, 1, 2, 2) == true)
+				{
+					player.player_state = 1;
+				}
 			}
 		}
 	}
@@ -772,6 +885,17 @@ void spawn_enemies()
 			}
 		}
 	}
+	if (fire_enemies_used == true)
+	{
+		while (enemy < 5)
+		{
+			rnd_[1] = rand_(39) + 1; //x
+			rnd_[0] = rand_(20) + 1; //y
+
+			spawn_enemy(2, 0, rnd_[1], rnd_[0]);
+			enemy++;
+		}
+	}
 }
 
 void clear_enemies()
@@ -860,7 +984,21 @@ void gen_map(u8 map_index)
 	else if (map_index == 3)
 	{
 		add_object(map_layer, "rocks");
-		u8 rnd_river = (int)((rand_(50) + rand_(40)) / 10);
+		u8 rnd_river = (int)(rand_(19));
+
+		if (rnd_river >= 16)
+		{
+			rnd_river = 9;
+		}
+		if (rnd_river >= 12)
+		{
+			rnd_river = 7;
+		}
+		if (rnd_river >= 10)
+		{
+			rnd_river = 6;
+		}
+
 		array2river(item_layer, rnd_river, rivers);
 	}
 }
@@ -925,6 +1063,8 @@ void reset_enemies()
 	car_enemies = empty_group;
 	snow_enemies = empty_group;
 	ball_enemies = empty_group;
+	fire_enemies = empty_group;
+	shadow_enemies = empty_group;
 	//re-SET the gen enemy data
 	switch (level)
 	{
@@ -1223,6 +1363,11 @@ void do_physics()
 
 void game_over()
 {
+	for (u8 enemy = 1; enemy <= total_enemies; enemy++)
+	{
+		NF_SpriteLayer(0, enemy, item_layer);
+	}
+
 	NF_CreateTiledBg(0, menu_layer, "game_over");
 	NF_CreateTiledBg(1, menu_layer, "game_over_touch");
 	render();
@@ -1280,16 +1425,12 @@ int main(void)
 			scanKeys(); //get  button input
 
 			u32 button = keysHeld();
-			if ((button == KEY_START) || (button == KEY_LID) || (touch_box(156, 163, 30, 20) && current_msec >= 520))
+			if ((button == KEY_START) || (button == KEY_LID) || (touch_box(205, 163, 30, 20) && current_msec >= 520))
 			{
 				if (pause_game() == true)
 				{
 					reset_game = true;
 				}
-			}
-			if (touch_box(205, 163, 30, 20) == true)
-			{
-				//take screenshot
 			}
 			player_movement(button);
 
@@ -1342,7 +1483,7 @@ int main(void)
 			case 4:
 				if (player.player_x <= 256 && player.player_y <= 192)
 				{
-					make_16x16_tile(0, item_layer, player.player_x, player.player_y, 0);
+					make_16x16_tile(75, item_layer, player.player_x, player.player_y, 0);
 				}
 
 				if (player.anim_delay <= current_msec)
