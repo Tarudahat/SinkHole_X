@@ -4,8 +4,8 @@
 [ext_resource path="res://objects/player.tscn" type="PackedScene" id=2]
 [ext_resource path="res://game.gd" type="Script" id=3]
 [ext_resource path="res://assets/GUI/touch_button.png" type="Texture" id=4]
-[ext_resource path="res://menus/game_over.tscn" type="PackedScene" id=5]
 [ext_resource path="res://assets/GUI/touch_button_menu.png" type="Texture" id=6]
+[ext_resource path="res://assets/font.tres" type="DynamicFont" id=7]
 
 [sub_resource type="CircleShape2D" id=1]
 radius = 100.0
@@ -92,5 +92,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="game_over" parent="." instance=ExtResource( 5 )]
-visible = false
+[node name="bridgecounter" type="Label" parent="GUI"]
+margin_left = 7.0
+margin_top = 60.0
+margin_right = 262.0
+margin_bottom = 110.0
+rect_scale = Vector2( 0.6, 0.6 )
+custom_fonts/font = ExtResource( 7 )
+text = "Bridges: "
+__meta__ = {
+"_edit_use_anchors_": false
+}

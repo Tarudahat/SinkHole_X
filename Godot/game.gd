@@ -31,11 +31,9 @@ onready var level = SceneGlobals.level # 0=plains (OG) 1=Highway 2=Snow field 3=
 
 onready var map_object_layer= Node
 onready var scorecounter= get_node("GUI/scorecounter")
+onready var bridgecounter= get_node("GUI/bridgecounter")
 
 onready var viewport_x=get_viewport().size.x
-
-onready var game_over_screen=get_node("game_over")
-onready var game_over_=false
 
 onready var random_x= rand_range(0.0,20.0)
 onready var random_y= rand_range(0.0,12.0)
@@ -406,14 +404,11 @@ func add_object(map_,str_):
 				map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
 
 func game_over():
-	self.remove_child(pause_menu)
-	game_over_screen.visible = true
-	click_delay=OS.get_system_time_msecs()+169
-	game_over_=true
+	#warning-ignore:return_value_discarded
+	get_tree().change_scene("res://menus/game_over.tscn")
 
 func _ready():
 	#NOTOUCH#
-	game_over_screen.visible = false
 	
 	for _i in enemy_types:
 		enemy_used.append(false)
@@ -431,11 +426,13 @@ func gen_map(map_index):
 	elif map_index==1:
 		map_current=map2.instance()
 		scorecounter.set("custom_colors/font_color", Color8(25,60,245,255))
+		bridgecounter.set("custom_colors/font_color", Color8(25,60,245,255))
 		enemy_used[1]=true
 
 	elif map_index==2:
 		map_current=map3.instance()
 		scorecounter.set("custom_colors/font_color", Color8(25,60,245,255))
+		bridgecounter.set("custom_colors/font_color", Color8(25,60,245,255))
 		enemy_used[2]=true
 		enemy_used[3]=true
 	elif map_index==3:
@@ -475,63 +472,59 @@ func gen_props(map_,map_index):
 
 
 func _process(_delta):
-	if Input.is_action_pressed("in_pause") and game_over_!=true:
+	if Input.is_action_pressed("in_pause"):
 		pause_menu.visible=true
 		get_tree().paused=true
 
-	if game_over_!=true:
-		if player.score<0:
-			player.score=0
-		scorecounter.text="Score: "+var2str(player.score)
-		game_over_screen.score_display=scorecounter.text
 
-		if spawn_hole_==false and hole_spawn_delay<=OS.get_system_time_secs():
-			spawn_hole_=true
+	if player.score<0:
+		player.score=0
+	
+	scorecounter.text="Score: "+var2str(player.score)
+	bridgecounter.text="Bridges: "+var2str(player.bridges)
+
+	if spawn_hole_==false and hole_spawn_delay<=OS.get_system_time_secs():
+		spawn_hole_=true
 		
-		if hole_update_==false and hole_update_delay<=OS.get_system_time_msecs():
-			hole_update_=true
+	if hole_update_==false and hole_update_delay<=OS.get_system_time_msecs():
+		hole_update_=true
 
 		
-		if item_place_==false and item_delay<=OS.get_system_time_secs():
-			item_place_=true
+	if item_place_==false and item_delay<=OS.get_system_time_secs():
+		item_place_=true
 
-		if spawn_hole_==true:
-			spawn_hole()
-			hole_spawn_delay=OS.get_system_time_secs()+4-difficulty
-			spawn_hole_=false
+	if spawn_hole_==true:
+		spawn_hole()
+		hole_spawn_delay=OS.get_system_time_secs()+4-difficulty
+		spawn_hole_=false
 		
-		if hole_update_==true:
-			update_holes(map_object_layer)
-			hole_update_delay=OS.get_system_time_msecs()+450
-			hole_update_=false
+	if hole_update_==true:
+		update_holes(map_object_layer)
+		hole_update_delay=OS.get_system_time_msecs()+450
+		hole_update_=false
 
-		if item_place_==true:
-			add_object(map_object_layer,"item")
-			item_delay=OS.get_system_time_secs()+7+difficulty
-			item_place_=false
+	if item_place_==true:
+		add_object(map_object_layer,"item")
+		item_delay=OS.get_system_time_secs()+7+difficulty
+		item_place_=false
 
-		if player.player_state==1:
-			game_over()
-		elif player.player_state==2:
-			if temp_tm<=OS.get_system_time_secs():
-				player.player_state=0
-				player.speed=1
-		elif player.player_state==3:
-			if temp_tm2<=OS.get_system_time_secs():
-				player.player_state=0
-				player.speed=1 
-		elif player.player_state==4:
-			map_object_layer.set_cell(player.player_x/64,player.player_y/64,-1)
-			if temp_tm3<=OS.get_system_time_secs():
-				player.sprite.play("default")
-				player.player_state=0
+	if player.player_state==1:
+		SceneGlobals.player_score=player.score
+		game_over()
+	elif player.player_state==2:
+		if temp_tm<=OS.get_system_time_secs():
+			player.player_state=0
+			player.speed=1
+	elif player.player_state==3:
+		if temp_tm2<=OS.get_system_time_secs():
+			player.player_state=0
+			player.speed=1 
+	elif player.player_state==4:
+		map_object_layer.set_cell(player.player_x/64,player.player_y/64,-1)
+		if temp_tm3<=OS.get_system_time_secs():
+			player.sprite.play("default")
+			player.player_state=0
 
-		do_physics()
+	do_physics()
 	
 
-func _input(event):
-	if game_over_==true:
-		
-		if (Input.is_action_just_pressed("in_accept") or (event is InputEventMouseButton)) and click_delay<=OS.get_system_time_msecs():
-			# warning-ignore:return_value_discarded
-			get_tree().change_scene("res://game.tscn")

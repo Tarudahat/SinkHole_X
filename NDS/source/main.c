@@ -324,11 +324,23 @@ void update_current_time()
 
 //--game functions--
 
-void create_sprite(u8 screen, u8 index, u8 asset)
+void create_sprite(u8 screen, u8 index, u8 asset, u8 mode)
 {
+	//mode 0 -> enemy  |  mode 1 -> player
+
 	NF_CreateSprite(screen, index, asset, asset, 0, 0);
 	NF_EnableSpriteRotScale(screen, index, index, true); //using index for arg. 3 so that they have separate rotations
-	NF_SpriteLayer(screen, index, menu_layer);
+
+	switch (mode)
+	{
+	case 0:
+		NF_SpriteLayer(screen, index, menu_layer);
+		break;
+
+	case 1:
+		NF_SpriteLayer(screen, index, item_layer);
+		break;
+	}
 }
 
 void player_movement(int keys)
@@ -405,7 +417,7 @@ void spawn_player()
 {
 
 	//create player sprite
-	create_sprite(0, 0, 0);
+	create_sprite(0, 0, 0, 1);
 	NF_SpriteLayer(0, 0, item_layer);
 
 	player.player_x = rand_(19) * 16 + 8;
@@ -462,7 +474,7 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 		car_enemies.group_members++;
 
 		car_enemies.enemy_id[car_enemies.group_members] = total_enemies;
-		create_sprite(0, total_enemies, 1);
+		create_sprite(0, total_enemies, 1, 0);
 
 		NF_SpriteRotScale(0, total_enemies, 128, 256, 256); //turn to the right
 		car_enemies.enemy_direction[car_enemies.group_members] = direction_;
@@ -484,7 +496,7 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 		snow_enemies.enemy_x[snow_enemies.group_members] = enemy_x_ * 16 + 8 + x_offset;
 		snow_enemies.enemy_y[snow_enemies.group_members] = enemy_y_ * 16;
 
-		create_sprite(0, total_enemies, 2);
+		create_sprite(0, total_enemies, 2, 0);
 
 		NF_MoveSprite(0, total_enemies, snow_enemies.enemy_x[snow_enemies.group_members], snow_enemies.enemy_y[snow_enemies.group_members]);
 
@@ -502,7 +514,7 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 		ball_enemies.enemy_x[ball_enemies.group_members] = -220;
 		ball_enemies.can_spawn[ball_enemies.group_members] = true;
 
-		create_sprite(0, total_enemies, 3);
+		create_sprite(0, total_enemies, 3, 0);
 
 		NF_MoveSprite(0, total_enemies, ball_enemies.enemy_x[ball_enemies.group_members], ball_enemies.enemy_y[ball_enemies.group_members]);
 	}
@@ -515,7 +527,7 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 		shadow_enemies.enemy_x[shadow_enemies.group_members] = enemy_x_ * 16 + 8 + x_offset;
 		shadow_enemies.enemy_y[shadow_enemies.group_members] = enemy_y_ * 16 + 8;
 
-		create_sprite(0, total_enemies, 7);
+		create_sprite(0, total_enemies, 7, 0);
 
 		NF_MoveSprite(0, total_enemies, shadow_enemies.enemy_x[shadow_enemies.group_members], shadow_enemies.enemy_y[shadow_enemies.group_members]);
 
@@ -528,7 +540,7 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 		fire_enemies.enemy_x[fire_enemies.group_members] = shadow_enemies.enemy_x[shadow_enemies.group_members];
 		fire_enemies.enemy_y[fire_enemies.group_members] = shadow_enemies.enemy_y[shadow_enemies.group_members] - (32 + rand_(5) * 16);
 
-		create_sprite(0, total_enemies, 6);
+		create_sprite(0, total_enemies, 6, 0);
 
 		NF_MoveSprite(0, total_enemies, fire_enemies.enemy_x[fire_enemies.group_members], fire_enemies.enemy_y[fire_enemies.group_members]);
 	}
@@ -686,9 +698,9 @@ void update_shadow_enemy(u8 enemy_)
 
 	if (shadow_enemies.can_spawn[enemy_] == true)
 	{
-		shadow_enemies.enemy_x[enemy_] = inworld(even((rand_(39) + 1) * 16 + 8 + enemy_scroll));
+		shadow_enemies.enemy_x[enemy_] = inworld((rand_(39) + 1) * 16 + 8) - (scroll_x % 16);
 		shadow_enemies.enemy_y[enemy_] = (rand_(20) + 1) * 16 + 8;
-		fire_enemies.enemy_y[enemy_] = shadow_enemies.enemy_y[enemy_] - (48 + rand_(4) * 16);
+		fire_enemies.enemy_y[enemy_] = shadow_enemies.enemy_y[enemy_] - (48 + rand_(5) * 16);
 		shadow_enemies.can_spawn[enemy_] = false;
 	}
 	NF_MoveSprite(0, shadow_enemies.enemy_id[enemy_], inworld(shadow_enemies.enemy_x[enemy_]), shadow_enemies.enemy_y[enemy_]);
@@ -696,7 +708,7 @@ void update_shadow_enemy(u8 enemy_)
 
 void update_fire_enemy(u8 enemy_)
 {
-	fire_enemies.enemy_x[enemy_] = shadow_enemies.enemy_x[enemy_]; //!
+	fire_enemies.enemy_x[enemy_] = inworld(shadow_enemies.enemy_x[enemy_]); //!
 	if (shadow_enemies.enemy_y[enemy_] - 8 >= fire_enemies.enemy_y[enemy_])
 	{
 		if (frame_in_sec % 3 > 0)
@@ -716,7 +728,7 @@ void update_fire_enemy(u8 enemy_)
 		fire_enemies.current_frame++;
 		if (fire_enemies.current_frame >= 2)
 			fire_enemies.current_frame = 0;
-		fire_enemies.anim_delay = current_msec + 200;
+		fire_enemies.anim_delay = current_msec + 164;
 	}
 
 	NF_SpriteFrame(0, fire_enemies.enemy_id[enemy_], fire_enemies.current_frame);
@@ -988,7 +1000,7 @@ void gen_map(u8 map_index)
 
 		if (rnd_river >= 16)
 		{
-			rnd_river = 9;
+			rnd_river = 8; //gota fix this later
 		}
 		if (rnd_river >= 12)
 		{
@@ -998,7 +1010,7 @@ void gen_map(u8 map_index)
 		{
 			rnd_river = 6;
 		}
-
+//incentive
 		array2river(item_layer, rnd_river, rivers);
 	}
 }
@@ -1350,7 +1362,7 @@ void do_physics()
 				player.anim_delay = current_msec + 142;
 				replace_item(37, 0);
 				roller.delay = current_sec + 6;
-				create_sprite(0, 0, 4);
+				create_sprite(0, 0, 4, 1);
 				NF_MoveSprite(0, 0, player.player_x, player.player_y);
 			}
 		}
@@ -1496,7 +1508,7 @@ int main(void)
 				NF_SpriteFrame(0, 0, player.current_frame);
 				if (roller.delay <= current_sec)
 				{
-					create_sprite(0, 0, 0);
+					create_sprite(0, 0, 0, 1);
 					NF_MoveSprite(0, 0, player.player_x, player.player_y);
 					player.player_state = 0;
 				}
@@ -1527,7 +1539,7 @@ bool pause_game()
 	u32 backup_sec = current_sec;
 	u32 backup_frame_in_sec = frame_in_sec;
 	NF_CreateTiledBg(1, menu_layer, "pause_menu");
-	create_sprite(1, 0, 0);
+	create_sprite(1, 0, 0, 0);
 	NF_SpriteLayer(1, 0, 0); //make it so that the sprite displays in front on the menu
 	NF_SpriteRotScale(1, 0, 0, 388, 342);
 	while (paused)
@@ -1604,6 +1616,7 @@ bool pause_game()
 		update_current_time();
 		render();
 	}
+
 	NF_CreateTiledBg(1, menu_layer, "game_touch");
 	NF_DeleteSprite(1, 0);
 	if (reset_game == false)

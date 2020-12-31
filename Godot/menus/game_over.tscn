@@ -1,8 +1,8 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://menus/game_over.gd" type="Script" id=2]
-
+[ext_resource path="res://assets/font.tres" type="DynamicFont" id=3]
 
 [sub_resource type="DynamicFont" id=1]
 size = 75
@@ -25,10 +25,10 @@ __meta__ = {
 }
 
 [node name="game_over_label" type="Label" parent="panel"]
-margin_left = 454.253
-margin_top = 308.444
-margin_right = 907.253
-margin_bottom = 400.444
+margin_left = 448.363
+margin_top = 244.999
+margin_right = 901.363
+margin_bottom = 336.999
 custom_fonts/font = SubResource( 1 )
 text = "Game Over"
 align = 1
@@ -37,13 +37,38 @@ __meta__ = {
 }
 
 [node name="score" type="Label" parent="panel"]
-margin_left = 131.622
-margin_top = 411.716
-margin_right = 1211.62
-margin_bottom = 503.716
+margin_left = 136.363
+margin_top = 349.0
+margin_right = 1216.36
+margin_bottom = 441.0
 custom_fonts/font = SubResource( 2 )
+text = "Score: 42069"
 align = 1
 valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="total_score" type="Label" parent="panel"]
+margin_left = 104.363
+margin_top = 549.0
+margin_right = 479.363
+margin_bottom = 652.0
+rect_scale = Vector2( 0.8, 0.8 )
+custom_fonts/font = ExtResource( 3 )
+text = "Total Score: "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HI" type="Label" parent="panel"]
+margin_left = 104.363
+margin_top = 661.0
+margin_right = 444.363
+margin_bottom = 764.0
+rect_scale = Vector2( 0.8, 0.8 )
+custom_fonts/font = ExtResource( 3 )
+text = "High Score: "
 __meta__ = {
 "_edit_use_anchors_": false
 }
