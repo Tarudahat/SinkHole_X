@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://assets/thumbnails/thumbnail_0.png" type="Texture" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://assets/GUI/menu_panel.png" type="Texture" id=4]
 [ext_resource path="res://menus/title_menu.gd" type="Script" id=5]
 [ext_resource path="res://assets/font.tres" type="DynamicFont" id=6]
+[ext_resource path="res://menus/button_cancel.tscn" type="PackedScene" id=7]
 
 [sub_resource type="DynamicFont" id=1]
 size = 60
@@ -22,6 +23,10 @@ font_data = ExtResource( 1 )
 [sub_resource type="DynamicFont" id=6]
 size = 72
 font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxEmpty" id=7]
+
+[sub_resource type="StyleBoxEmpty" id=8]
 
 [node name="title_menu" type="Node2D"]
 script = ExtResource( 5 )
@@ -89,8 +94,9 @@ __meta__ = {
 }
 
 [node name="level_name" type="Label" parent="background"]
+margin_left = 8.0
 margin_top = 640.0
-margin_right = 1278.0
+margin_right = 1286.0
 margin_bottom = 716.0
 custom_fonts/font = SubResource( 6 )
 text = "Plains"
@@ -105,6 +111,8 @@ margin_top = 640.0
 margin_right = 1144.0
 margin_bottom = 720.0
 mouse_default_cursor_shape = 2
+custom_styles/hover = SubResource( 7 )
+custom_styles/focus = SubResource( 8 )
 custom_fonts/font = ExtResource( 6 )
 text = "Ok"
 flat = true
@@ -124,3 +132,5 @@ text = "Ok"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="button_cancel" parent="." instance=ExtResource( 7 )]

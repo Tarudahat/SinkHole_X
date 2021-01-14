@@ -16,8 +16,8 @@ _global_script_class_icons={
 [application]
 
 config/name="SinkHole X"
-config/description="SinkHole X"
-run/main_scene="res://menus/title_menu.tscn"
+config/description="SinkHole"
+run/main_scene="res://menus/title_screen.tscn"
 boot_splash/use_filter=false
 boot_splash/bg_color=Color( 0.141176, 0.141176, 0.141176, 1 )
 config/icon="res://icon.png"
@@ -107,7 +107,7 @@ f11={
 quality/driver/driver_name="GLES2"
 vram_compression/import_etc=true
 vram_compression/import_etc2=false
-environment/default_clear_color=Color( 0.301961, 0.301961, 0.301961, 1 )
+quality/dynamic_fonts/use_oversampling=false
 
 [world]
 

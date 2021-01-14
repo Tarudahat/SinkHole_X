@@ -1,4 +1,4 @@
-main.o: C\:/Users/tarud/Documents/SinkHole_X/NDS/source/main.c \
+E.o: C\:/Users/tarud/Documents/SinkHole_X/NDS/source/E.c \
  C\:/devkitPro/libnds/include/nds.h \
  C\:/devkitPro/libnds/include/nds/libversion.h \
  C\:/devkitPro/libnds/include/nds/ndstypes.h \
@@ -74,9 +74,7 @@ main.o: C\:/Users/tarud/Documents/SinkHole_X/NDS/source/main.c \
  C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_sound.h \
  C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_media.h \
  C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_3d.h \
- C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_sprite3d.h \
- C\:/Users/tarud/Documents/SinkHole_X/NDS/source/structs.c \
- C\:/Users/tarud/Documents/SinkHole_X/NDS/include/rivers.h
+ C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_sprite3d.h
 C\:/devkitPro/libnds/include/nds.h:
 C\:/devkitPro/libnds/include/nds/libversion.h:
 C\:/devkitPro/libnds/include/nds/ndstypes.h:
@@ -153,5 +151,3 @@ C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_sound.h:
 C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_media.h:
 C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_3d.h:
 C\:/Users/tarud/Documents/SinkHole_X/NDS/nflib/include/nf_sprite3d.h:
-C\:/Users/tarud/Documents/SinkHole_X/NDS/source/structs.c:
-C\:/Users/tarud/Documents/SinkHole_X/NDS/include/rivers.h:

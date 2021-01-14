@@ -72,8 +72,8 @@ func get_rnd_vector2D(str_):
 func spawn_player():
 	var player_position=get_rnd_vector2D("player")
 	if map_object_layer.get_cell((player_position.x-32)/64,(player_position.y-32)/64)<10:
-		player.player_x=player_position.x
-		player.player_y=player_position.y
+		player.position.x=player_position.x
+		player.position.y=player_position.y
 	else:
 		spawn_player()
 
@@ -225,7 +225,7 @@ func update_snow_ball_enemy(enemy_):
 
 	if round(rand_range(1,111))==69 and enemy_.can_spawn==true:
 		enemy_.position=enemy_.linked_node.position
-		enemy_.target=Vector2(player.player_x,player.player_y)
+		enemy_.target=Vector2(player.position.x,player.position.y)
 		enemy_.can_spawn=false
 		enemy_.moves=0
 		
@@ -270,13 +270,13 @@ func update_fire_enemy(enemy_):
 		update_fire_target(enemy_.linked_node)
 		
 func update_ghost_enemy(enemy_):
-	if player.player_x>enemy_.position.x:
+	if player.position.x>enemy_.position.x:
 		enemy_.position.x+=0.1+difficulty/2
-	if player.player_x<enemy_.position.x:
+	if player.position.x<enemy_.position.x:
 		enemy_.position.x-=0.1+difficulty/2
-	if player.player_y>enemy_.position.y:
+	if player.position.y>enemy_.position.y:
 		enemy_.position.y+=0.1+difficulty/2
-	if player.player_y<enemy_.position.y:
+	if player.position.y<enemy_.position.y:
 		enemy_.position.y-=0.1+difficulty/2
 
 	if enemy_.moves<=OS.get_system_time_msecs():
@@ -288,30 +288,40 @@ func update_ghost_enemy(enemy_):
 			enemy_.moves=OS.get_system_time_msecs()+1520*rand_range(2,5)
 			enemy_.get_child(0).play("default")
 	
-
 func update_holes(map_):
 	for dummy_1 in range(20):
 		for dummy_2 in range(12):
 			if map_.get_cell(dummy_1,dummy_2)>-1 and map_.get_cell(dummy_1,dummy_2)<4:
 				map_.set_cell(dummy_1, dummy_2, map_.get_cell(dummy_1,dummy_2)+1)
 
+
+
 func get_colider(map_):
-	#I find the Godot collision stuff to be confusing 
-	#and wonky to use for what I want to do with it, so I made this garbage
+	#Tried doing collision the proper way, but it didn't feel right
+	#and it's still wonky to use for what I want to do with it, so I made this garbage
 
 	#uncomment to disable collision:
 	#return -1
 
+	var collision_points=[0,0,0,0]
+
 	if map_.get_cell((player.position.x-18)/64,(player.position.y-16)/64)>-1:
-		return map_.get_cell((player.position.x-18)/64,(player.position.y-18)/64)
-	elif map_.get_cell((player.position.x-18)/64,(player.position.y+18)/64)>-1:
-		return map_.get_cell((player.position.x-18)/64,(player.position.y+18)/64)
-	elif map_.get_cell((player.position.x+18)/64,(player.position.y-16)/64)>-1:
-		return map_.get_cell((player.position.x+18)/64,(player.position.y-18)/64)
-	elif map_.get_cell((player.position.x+18)/64,(player.position.y+18)/64)>-1:
-		return map_.get_cell((player.position.x+18)/64,(player.position.y+18)/64)
-	else:
-		return -1
+		collision_points[0]=map_.get_cell((player.position.x-18)/64,(player.position.y-18)/64)
+	if map_.get_cell((player.position.x-18)/64,(player.position.y+18)/64)>-1:
+		collision_points[1]=map_.get_cell((player.position.x-18)/64,(player.position.y+18)/64)
+	if map_.get_cell((player.position.x+18)/64,(player.position.y-16)/64)>-1:
+		collision_points[2]=map_.get_cell((player.position.x+18)/64,(player.position.y-18)/64)
+	if map_.get_cell((player.position.x+18)/64,(player.position.y+18)/64)>-1:
+		collision_points[3]=map_.get_cell((player.position.x+18)/64,(player.position.y+18)/64)
+	
+	collision_points.sort()
+
+	for i in range(4):
+		if collision_points[i]!=0:
+			return collision_points[i]
+	
+	return -1
+		
 
 func replace_item(map_,index_,index_2):
 	if map_.get_cell((player.position.x-18)/64,(player.position.y-16)/64)==index_:
@@ -325,6 +335,7 @@ func replace_item(map_,index_,index_2):
 	else:
 		#failed to remove item
 		pass
+	
 
 func do_physics():
 	if get_colider(map_object_layer)>1:
@@ -363,7 +374,7 @@ func do_physics():
 			elif get_colider(map_object_layer)==13:
 				#free item slot
 				replace_item(map_object_layer,13,-1)
-		if get_colider(map_object_layer)>=10 && get_colider(map_object_layer)<=12:
+		if get_colider(map_object_layer)>=10 && get_colider(map_object_layer) <=12:
 			player.player_state=1
 	if enemy_used[0]==true:
 		get_enemy_collision()
@@ -520,7 +531,7 @@ func _process(_delta):
 			player.player_state=0
 			player.speed=1 
 	elif player.player_state==4:
-		map_object_layer.set_cell(player.player_x/64,player.player_y/64,-1)
+		map_object_layer.set_cell(player.position.x/64,player.position.y/64,-1)
 		if temp_tm3<=OS.get_system_time_secs():
 			player.sprite.play("default")
 			player.player_state=0

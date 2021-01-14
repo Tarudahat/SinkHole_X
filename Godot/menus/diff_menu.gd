@@ -3,7 +3,6 @@ extends Node2D
 onready var button_left = get_node("background/button_left")
 onready var button_right = get_node("background/button_right")
 onready var button_ok = get_node("background/button_ok")
-onready var button_cancel = get_node("background/button_cancel")
 onready var diff_name = get_node("background/diff_name")
 onready var selected_diff=2
 onready var change_info=true
@@ -31,7 +30,7 @@ func _input(event):
 		SceneGlobals.difficulty=selected_diff+1
 		# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://game.tscn")
-	elif button_cancel.pressed==true or Input.is_action_just_pressed("ui_cancel"):
+	elif $button_cancel.pressed==true or Input.is_action_just_pressed("ui_cancel"):
 		# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://menus/title_menu.tscn")
 		

@@ -7,8 +7,11 @@ onready var player_state=0
 onready var bridges=0
 onready var speed=1
 onready var sprite=self.get_child(0)
+var player_collision
 
 func _process(_delta):
+	player_x=0
+	player_y=0
 	if Input.is_action_pressed("in_right"):
 		player_x+=3*speed
 		score+=10*speed
@@ -26,13 +29,13 @@ func _process(_delta):
 		score+=10*speed
 		self.rotation_degrees=180
 
-	if player_x>20*64:
-		player_x=0
-	if player_x<0:
-		player_x=20*64
-	if player_y>12*64:
-		player_y=0
-	if player_y<0:
-		player_y=12*64
+	if self.position.x>20*64:
+		self.position.x=0
+	if self.position.x<0:
+		self.position.x=20*64
+	if self.position.y>12*64:
+		self.position.y=0
+	if self.position.y<0:
+		self.position.y=12*64
 
-	self.position=Vector2(player_x,player_y)
+	player_collision=move_and_collide(Vector2(player_x,player_y))

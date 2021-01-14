@@ -21,6 +21,8 @@ struct Timer invert_item;
 struct Timer items_timer = {7};
 struct Timer roller;
 
+struct SaveStruct save_data;
+
 touchPosition touchXY;
 
 u8 frame_in_sec = {0};
@@ -33,6 +35,7 @@ u8 prev_scroll_x;
 s8 enemy_scroll;
 s16 big_enemy_scroll;
 u8 x_offset = 0;
+
 
 bool reset_game = {false};
 bool paused = {false};
@@ -157,13 +160,13 @@ void init(void)
 	NF_LoadTextFont16("font/font16", "font", 256, 256, 0);
 	//----
 
-	NF_CreateTextLayer16(0, text_layer, 0, "font");
-	NF_CreateTextLayer16(1, text_layer, 0, "font");
-	NF_CreateTiledBg(0, item_layer, "item_layer"); //items and sinkholes layer
+	NF_CreateTextLayer16(0, 0, 0, "font");
+	NF_CreateTextLayer16(1, 0, 0, "font");
+	NF_CreateTiledBg(0, 2, "item_layer"); //items and sinkholes layer
 
 	//bottom screen stuff
 	NF_LoadTiledBg("menu/temp_map", "temp_screen", 256, 256);
-	NF_CreateTiledBg(1, menu_layer, "main_menu_touch");
+	NF_CreateTiledBg(1, 1, "main_menu_touch");
 }
 
 int get_player_tile(u8 layer);
@@ -178,6 +181,12 @@ void render(void)
 		//display score
 		sprintf(player.score_str, "Score:%lli", player.score);
 		NF_WriteText16(1, text_layer, 3, 1, player.score_str);
+
+		//display bridges
+		char *bridges_str="AAAAAAAAAAAAAAAAA";
+		sprintf(bridges_str, "%0i",player.bridges);
+		NF_WriteText16(1,text_layer,10,2,bridges_str);
+
 	}
 	else
 	{
@@ -262,10 +271,10 @@ void make_16x16_tile(u16 tile_id, u8 layer, s16 x, s16 y, u8 mode)
 		{
 			y = -1;
 		}
-		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8), even((y + 16) / 8), tile_id);
-		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8) + 1, even((y + 16) / 8), tile_id + 1);
-		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8), even((y + 16) / 8) + 1, tile_id + 2);
-		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8) + 1, even((y + 16) / 8) + 1, tile_id + 3);
+		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8), even((y + 16) / 8), 0);
+		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8) + 1, even((y + 16) / 8), 0);
+		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8), even((y + 16) / 8) + 1, 0);
+		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8) + 1, even((y + 16) / 8) + 1, 0);
 		break;
 
 	case 1:
@@ -519,19 +528,7 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 		NF_MoveSprite(0, total_enemies, ball_enemies.enemy_x[ball_enemies.group_members], ball_enemies.enemy_y[ball_enemies.group_members]);
 	}
 	else if (enemy_type == 2)
-	{
-		shadow_enemies.group_members++;
-
-		shadow_enemies.enemy_id[shadow_enemies.group_members] = total_enemies;
-
-		shadow_enemies.enemy_x[shadow_enemies.group_members] = enemy_x_ * 16 + 8 + x_offset;
-		shadow_enemies.enemy_y[shadow_enemies.group_members] = enemy_y_ * 16 + 8;
-
-		create_sprite(0, total_enemies, 7, 0);
-
-		NF_MoveSprite(0, total_enemies, shadow_enemies.enemy_x[shadow_enemies.group_members], shadow_enemies.enemy_y[shadow_enemies.group_members]);
-
-		total_enemies++;
+	{	
 
 		fire_enemies.group_members++;
 
@@ -543,6 +540,20 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 		create_sprite(0, total_enemies, 6, 0);
 
 		NF_MoveSprite(0, total_enemies, fire_enemies.enemy_x[fire_enemies.group_members], fire_enemies.enemy_y[fire_enemies.group_members]);
+
+		total_enemies++;
+
+		shadow_enemies.group_members++;
+
+		shadow_enemies.enemy_id[shadow_enemies.group_members] = total_enemies;
+
+		shadow_enemies.enemy_x[shadow_enemies.group_members] = enemy_x_ * 16 + 8 + x_offset;
+		shadow_enemies.enemy_y[shadow_enemies.group_members] = enemy_y_ * 16 + 8;
+
+		create_sprite(0, total_enemies, 7, 0);
+
+		NF_MoveSprite(0, total_enemies, shadow_enemies.enemy_x[shadow_enemies.group_members], shadow_enemies.enemy_y[shadow_enemies.group_members]);
+
 	}
 }
 
@@ -699,7 +710,7 @@ void update_shadow_enemy(u8 enemy_)
 	if (shadow_enemies.can_spawn[enemy_] == true)
 	{
 		shadow_enemies.enemy_x[enemy_] = inworld((rand_(39) + 1) * 16 + 8) - (scroll_x % 16);
-		shadow_enemies.enemy_y[enemy_] = (rand_(20) + 1) * 16 + 8;
+		shadow_enemies.enemy_y[enemy_] = (rand_(11) + 1) * 16 + 8;
 		fire_enemies.enemy_y[enemy_] = shadow_enemies.enemy_y[enemy_] - (48 + rand_(5) * 16);
 		shadow_enemies.can_spawn[enemy_] = false;
 	}
@@ -711,7 +722,7 @@ void update_fire_enemy(u8 enemy_)
 	fire_enemies.enemy_x[enemy_] = inworld(shadow_enemies.enemy_x[enemy_]); //!
 	if (shadow_enemies.enemy_y[enemy_] - 8 >= fire_enemies.enemy_y[enemy_])
 	{
-		if (frame_in_sec % 3 > 0)
+		if (frame_in_sec % 2 ==0)
 		{
 			fire_enemies.enemy_y[enemy_]++;
 		}
@@ -823,7 +834,7 @@ bool is_in(u8 input, u8 array[])
 void spawn_enemies()
 {
 	u8 rnd_[2];
-	bool illegal_position[22][22];
+	bool illegal_position[14][22];
 	u8 enemy = {0};
 	u8 i = {0};
 
@@ -996,21 +1007,24 @@ void gen_map(u8 map_index)
 	else if (map_index == 3)
 	{
 		add_object(map_layer, "rocks");
-		u8 rnd_river = (int)(rand_(19));
+		u8 rnd_river = (int)(rand_(26));
 
-		if (rnd_river >= 16)
-		{
-			rnd_river = 8; //gota fix this later
+		if (rnd_river >= 20){
+			rnd_river = 9;
 		}
-		if (rnd_river >= 12)
+		else if (rnd_river >= 16)
+		{
+			rnd_river = 8;
+		}
+		else if (rnd_river >= 12)
 		{
 			rnd_river = 7;
 		}
-		if (rnd_river >= 10)
+		else if (rnd_river >= 10)
 		{
 			rnd_river = 6;
 		}
-//incentive
+
 		array2river(item_layer, rnd_river, rivers);
 	}
 }
@@ -1099,6 +1113,13 @@ void reset_enemies()
 		break;
 	}
 	NF_ResetSpriteBuffers();
+}
+
+void enemies_hide(){
+	for (u8 enemy = 1; enemy <= total_enemies; enemy++)
+	{
+		NF_SpriteLayer(0, enemy, item_layer);
+	}
 }
 
 void reset()
@@ -1243,7 +1264,7 @@ void difficulty_menu()
 		{
 			selecting = false;
 		}
-		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 85, 26) == true))
+		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 65, 26) == true))
 		{
 			reset();
 			swiWaitForVBlank();
@@ -1375,10 +1396,7 @@ void do_physics()
 
 void game_over()
 {
-	for (u8 enemy = 1; enemy <= total_enemies; enemy++)
-	{
-		NF_SpriteLayer(0, enemy, item_layer);
-	}
+	enemies_hide();
 
 	NF_CreateTiledBg(0, menu_layer, "game_over");
 	NF_CreateTiledBg(1, menu_layer, "game_over_touch");
@@ -1442,6 +1460,7 @@ int main(void)
 				if (pause_game() == true)
 				{
 					reset_game = true;
+					enemies_hide();
 				}
 			}
 			player_movement(button);
@@ -1466,7 +1485,6 @@ int main(void)
 			}
 			//----------
 
-			do_physics();
 
 			//--handle player state--
 			switch (player.player_state)
@@ -1517,6 +1535,7 @@ int main(void)
 			}
 			//-----------
 
+			do_physics();
 			render();
 			update_current_time();
 		}

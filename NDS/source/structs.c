@@ -1,6 +1,11 @@
 #include <nds.h>
 #include <stdio.h>
 
+struct SaveStruct{
+    u64 total_score;
+    u64 hi_scores[4][5];
+};
+
 struct Player
 {
     u64 score;

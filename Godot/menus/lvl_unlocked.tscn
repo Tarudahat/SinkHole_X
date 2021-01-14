@@ -1,0 +1,57 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://assets/font.tres" type="DynamicFont" id=1]
+[ext_resource path="res://assets/GUI/game_over.png" type="Texture" id=2]
+[ext_resource path="res://menus/lvl_unlocked.gd" type="Script" id=3]
+
+[sub_resource type="Theme" id=1]
+
+[node name="lvl_unlocked" type="Node2D"]
+script = ExtResource( 3 )
+
+[node name="bg" type="TextureRect" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+texture = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="label" type="Label" parent="bg"]
+margin_left = 264.0
+margin_top = 64.0
+margin_right = 714.0
+margin_bottom = 114.0
+rect_scale = Vector2( 1.7, 1.7 )
+custom_fonts/font = ExtResource( 1 )
+text = "Level Unlocked!"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="text" type="Label" parent="bg"]
+margin_left = 248.0
+margin_top = 320.0
+margin_right = 1016.0
+margin_bottom = 696.0
+theme = SubResource( 1 )
+custom_fonts/font = ExtResource( 1 )
+text = " 
+has been unlocked!
+
+Go to the \"level select\"
+
+menu to check it out!"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lvl_name" type="Label" parent="bg"]
+margin_left = 248.0
+margin_top = 280.0
+margin_right = 1016.0
+margin_bottom = 330.0
+custom_fonts/font = ExtResource( 1 )
+text = "lvl_name"
+align = 1
