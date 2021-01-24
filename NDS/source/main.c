@@ -38,7 +38,7 @@ u8 x_offset = 0;
 
 
 bool reset_game = {false};
-bool paused = {false};
+bool touch_text_render = {true};
 
 bool enemies_used = {false};
 bool car_enemies_used = {false};
@@ -145,17 +145,26 @@ void init(void)
 	NF_LoadTiledBg("BG/map3", "map3", 512, 256);
 
 	//menus
-	NF_LoadTiledBg("menu/main_menu_touch", "main_menu_touch", 256, 256);
+	//top screen
 	NF_LoadTiledBg("menu/main_menu0", "main_menu0", 256, 256);
 	NF_LoadTiledBg("menu/main_menu1", "main_menu1", 256, 256);
 	NF_LoadTiledBg("menu/main_menu2", "main_menu2", 256, 256);
 	NF_LoadTiledBg("menu/main_menu3", "main_menu3", 256, 256);
 	NF_LoadTiledBg("menu/clear_screen", "clear_screen", 256, 256);
 	NF_LoadTiledBg("menu/game_over", "game_over", 256, 256);
-	NF_LoadTiledBg("menu/game_over_touch", "game_over_touch", 256, 256);
-	NF_LoadTiledBg("menu/pause_menu", "pause_menu", 256, 256);
+	NF_LoadTiledBg("menu/pause_menu_top", "pause_menu_top", 256, 256);
 	NF_LoadTiledBg("menu/diff_menu", "diff_menu", 256, 768);
+	NF_LoadTiledBg("menu/title", "title", 256, 256);
+	NF_LoadTiledBg("menu/power_msg", "power_msg", 256, 256);
+
+	//bottom screen
 	NF_LoadTiledBg("menu/game_touch", "game_touch", 256, 256);
+	NF_LoadTiledBg("menu/title_bottom", "title_bottom", 256, 256);
+	NF_LoadTiledBg("menu/temp_map", "temp_screen", 256, 256);
+	NF_LoadTiledBg("menu/pause_menu", "pause_menu", 256, 256);
+	NF_LoadTiledBg("menu/game_over_touch", "game_over_touch", 256, 256);
+	NF_LoadTiledBg("menu/main_menu_touch", "main_menu_touch", 256, 256);
+
 	//font
 	NF_LoadTextFont16("font/font16", "font", 256, 256, 0);
 	//----
@@ -164,16 +173,18 @@ void init(void)
 	NF_CreateTextLayer16(1, 0, 0, "font");
 	NF_CreateTiledBg(0, 2, "item_layer"); //items and sinkholes layer
 
-	//bottom screen stuff
-	NF_LoadTiledBg("menu/temp_map", "temp_screen", 256, 256);
-	NF_CreateTiledBg(1, 1, "main_menu_touch");
+	//create tilemaps so they can be used
+
+
+	NF_CreateTiledBg(0, map_layer, "map0");
+
 }
 
 int get_player_tile(u8 layer);
 
 void render(void)
 {
-	if (player.player_state != 1 && paused != true)
+	if (player.player_state != 1 && touch_text_render == true)
 	{
 		//clear bottom screen
 		NF_ClearTextLayer16(1, text_layer);
@@ -253,7 +264,7 @@ int even(int input_num)
 	return input_num;
 }
 
-void make_16x16_tile(u16 tile_id, u8 layer, s16 x, s16 y, u8 mode)
+void make_16x16_tile(u8 screen, u16 tile_id, u8 layer, s16 x, s16 y, u8 mode)
 { //mode 1 => tile map position | mode 0 => on screen for player | mode 2 => empty tile
 	if (tile_id == 0)
 	{
@@ -271,23 +282,23 @@ void make_16x16_tile(u16 tile_id, u8 layer, s16 x, s16 y, u8 mode)
 		{
 			y = -1;
 		}
-		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8), even((y + 16) / 8), 0);
-		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8) + 1, even((y + 16) / 8), 0);
-		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8), even((y + 16) / 8) + 1, 0);
-		NF_SetTileOfMap(0, layer, even((x + 16 + scroll_x) / 8) + 1, even((y + 16) / 8) + 1, 0);
+		NF_SetTileOfMap(screen, layer, even((x + 16 + scroll_x) / 8), even((y + 16) / 8), 0);
+		NF_SetTileOfMap(screen, layer, even((x + 16 + scroll_x) / 8) + 1, even((y + 16) / 8), 0);
+		NF_SetTileOfMap(screen, layer, even((x + 16 + scroll_x) / 8), even((y + 16) / 8) + 1, 0);
+		NF_SetTileOfMap(screen, layer, even((x + 16 + scroll_x) / 8) + 1, even((y + 16) / 8) + 1, 0);
 		break;
 
 	case 1:
-		NF_SetTileOfMap(0, layer, x, y, tile_id);
-		NF_SetTileOfMap(0, layer, x + 1, y, tile_id + 1);
-		NF_SetTileOfMap(0, layer, x, y + 1, tile_id + 2);
-		NF_SetTileOfMap(0, layer, x + 1, y + 1, tile_id + 3);
+		NF_SetTileOfMap(screen, layer, x, y, tile_id);
+		NF_SetTileOfMap(screen, layer, x + 1, y, tile_id + 1);
+		NF_SetTileOfMap(screen, layer, x, y + 1, tile_id + 2);
+		NF_SetTileOfMap(screen, layer, x + 1, y + 1, tile_id + 3);
 		break;
 	case 2:
-		NF_SetTileOfMap(0, layer, x, y, 0);
-		NF_SetTileOfMap(0, layer, x + 1, y, 0);
-		NF_SetTileOfMap(0, layer, x, y + 1, 0);
-		NF_SetTileOfMap(0, layer, x + 1, y + 1, 0);
+		NF_SetTileOfMap(screen, layer, x, y, 0);
+		NF_SetTileOfMap(screen, layer, x + 1, y, 0);
+		NF_SetTileOfMap(screen, layer, x, y + 1, 0);
+		NF_SetTileOfMap(screen, layer, x + 1, y + 1, 0);
 		break;
 	}
 }
@@ -298,7 +309,7 @@ void array2river(u8 layer, u8 river_, u8 array[10][12][20])
 	{
 		for (u8 i_y = 0; i_y < 12; i_y++)
 		{
-			make_16x16_tile(array[river_][i_y][i_x], layer, i_x * 2, i_y * 2, 1);
+			make_16x16_tile(0, array[river_][i_y][i_x], layer, i_x * 2, i_y * 2, 1);
 		}
 	}
 }
@@ -616,7 +627,7 @@ void update_car_enemy(u8 enemy_)
 		if ((car_enemies.enemy_y[enemy_] <= 192) & (car_enemies.enemy_y[enemy_] >= 0))
 		{
 
-			make_16x16_tile(0, item_layer, even(car_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), car_enemies.enemy_y[enemy_] / 8 + 1, 1);
+			make_16x16_tile(0,0, item_layer, even(car_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), car_enemies.enemy_y[enemy_] / 8 + 1, 1);
 		}
 	}
 }
@@ -693,7 +704,7 @@ void update_snow_enemy(u8 enemy_)
 	NF_MoveSprite(0, snow_enemies.enemy_id[enemy_], snow_enemies.enemy_x[enemy_], snow_enemies.enemy_y[enemy_]);
 	if ((snow_enemies.enemy_x[enemy_] <= 256 * 2) & (even(snow_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1) >= 0))
 	{
-		make_16x16_tile(0, item_layer, even(snow_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), even(snow_enemies.enemy_y[enemy_] / 8) + 4, 1);
+		make_16x16_tile(0,0, item_layer, even(snow_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), even(snow_enemies.enemy_y[enemy_] / 8) + 4, 1);
 	}
 }
 
@@ -724,7 +735,7 @@ void update_fire_enemy(u8 enemy_)
 	{
 		if (frame_in_sec % 2 ==0)
 		{
-			fire_enemies.enemy_y[enemy_]++;
+			fire_enemies.enemy_y[enemy_]+=1+(int)(difficulty/3);
 		}
 	}
 	else if (shadow_enemies.enemy_y[enemy_] - 8 <= fire_enemies.enemy_y[enemy_])
@@ -931,7 +942,35 @@ void clear_enemies()
 	enemies_deleted = true;
 }
 
-void add_object(u8 layer_, char *str_)
+void clear_map(u8 layer, u16 tile, u8 mode)
+{ //mode -> 0 fill map | mode -> 1 switch to empty map | mode -> 2 fill map wth 16x16 tiles
+	switch (mode)
+	{
+	case 0:
+		for (u8 x = 0; x < 40; x += 1)
+		{
+			for (u8 y = 0; y < 24; y += 1)
+			{
+				NF_SetTileOfMap(0, layer, x, y, tile);
+			}
+		}
+		break;
+	case 1:
+		NF_CreateTiledBg(0, layer, "clear_screen");
+		break;
+	case 2:
+		for (u8 x = 0; x < 40; x += 1)
+		{
+			for (u8 y = 0; y < 24; y += 1)
+			{
+				make_16x16_tile(0,tile, layer, even(x), even(y), 1);
+			}
+		}
+		break;
+	}
+}
+
+void add_object(u8 screen, u8 layer_, char *str_)
 {
 	u8 prop_id = 0;
 	if (strcmp(str_, "item") == 0)
@@ -956,25 +995,26 @@ void add_object(u8 layer_, char *str_)
 	{
 		for (u8 i = 0; i < (rand_(7) + 28); i++)
 		{
-			make_16x16_tile(2, layer_, even(rand_(80)), even(rand_(48)), 1);
+			make_16x16_tile(screen,2, layer_, even(rand_(80)), even(rand_(48)), 1);
 		}
 		for (u8 i = 0; i < (rand_(8) + 5); i++)
 		{
-			make_16x16_tile(6, layer_, even(rand_(80)), even(rand_(48)), 1);
+			make_16x16_tile(screen,6, layer_, even(rand_(80)), even(rand_(48)), 1);
 		}
 	}
 	else if (strcmp(str_, "snow_grass") == 0)
 	{
 		for (u8 i = 0; i < (rand_(5) + 12); i++)
 		{
-			make_16x16_tile(6, layer_, even(rand_(80)), even(rand_(48)), 1);
+			make_16x16_tile(screen,6, layer_, even(rand_(80)), even(rand_(48)), 1);
 		}
 	}
 	else if (strcmp(str_, "rocks") == 0)
 	{
+		clear_map(layer_,1,2);
 		for (u8 i = 0; i < (rand_(5) + 12); i++)
 		{
-			make_16x16_tile(6, layer_, even(rand_(80)), even(rand_(48)), 1);
+			make_16x16_tile(screen,6, layer_, even(rand_(80)), even(rand_(48)), 1);
 		}
 	}
 	else if (strcmp(str_, "item") == 0)
@@ -982,9 +1022,9 @@ void add_object(u8 layer_, char *str_)
 		u16 rnd_x = even(rand_(80));
 		u16 rnd_y = even(rand_(48));
 
-		if ((NF_GetTileOfMap(0, item_layer, rnd_x, rnd_y) == 75) || (NF_GetTileOfMap(0, item_layer, rnd_x, rnd_y) == 0))
+		if ((NF_GetTileOfMap(screen, item_layer, rnd_x, rnd_y) == 75) || (NF_GetTileOfMap(screen, item_layer, rnd_x, rnd_y) == 0))
 		{
-			make_16x16_tile(prop_id, layer_, rnd_x, rnd_y, 1);
+			make_16x16_tile(screen,prop_id, layer_, rnd_x, rnd_y, 1);
 		}
 	}
 }
@@ -998,15 +1038,15 @@ void gen_map(u8 map_index)
 
 	if (map_index == 0)
 	{
-		add_object(map_layer, "grass");
+		add_object(0,map_layer, "grass");
 	}
 	else if (map_index == 2)
 	{
-		add_object(map_layer, "snow_grass");
+		add_object(0,map_layer, "snow_grass");
 	}
 	else if (map_index == 3)
 	{
-		add_object(map_layer, "rocks");
+		add_object(0,map_layer, "rocks");
 		u8 rnd_river = (int)(rand_(26));
 
 		if (rnd_river >= 20){
@@ -1037,37 +1077,9 @@ void update_holes()
 		{
 			if (NF_GetTileOfMap(0, item_layer, x, y) > 0 && NF_GetTileOfMap(0, item_layer, x, y) < 16 && x % 2 == 0 && y % 2 == 0)
 			{
-				make_16x16_tile(NF_GetTileOfMap(0, item_layer, x, y) + 4, item_layer, x, y, 1);
+				make_16x16_tile(0,NF_GetTileOfMap(0, item_layer, x, y) + 4, item_layer, x, y, 1);
 			}
 		}
-	}
-}
-
-void clear_map(u8 layer, u16 tile, u8 mode)
-{ //mode -> 0 fill map | mode -> 1 switch to empty map | mode -> 2 fill map wth 16x16 tiles
-	switch (mode)
-	{
-	case 0:
-		for (u8 x = 0; x < 40; x += 1)
-		{
-			for (u8 y = 0; y < 24; y += 1)
-			{
-				NF_SetTileOfMap(0, layer, x, y, tile);
-			}
-		}
-		break;
-	case 1:
-		NF_CreateTiledBg(0, layer, "clear_screen");
-		break;
-	case 2:
-		for (u8 x = 0; x < 40; x += 1)
-		{
-			for (u8 y = 0; y < 24; y += 1)
-			{
-				make_16x16_tile(tile, layer, even(x), even(y), 1);
-			}
-		}
-		break;
 	}
 }
 
@@ -1115,10 +1127,10 @@ void reset_enemies()
 	NF_ResetSpriteBuffers();
 }
 
-void enemies_hide(){
+void enemies_layer(u8 layer){
 	for (u8 enemy = 1; enemy <= total_enemies; enemy++)
 	{
-		NF_SpriteLayer(0, enemy, item_layer);
+		NF_SpriteLayer(0, enemy, layer);
 	}
 }
 
@@ -1162,6 +1174,38 @@ void reset()
 }
 
 void difficulty_menu();
+bool cursor_menu();
+
+void title_menu(){
+	//-title menu-
+	//fancy grass stuff
+	swiWaitForVBlank();
+	NF_CreateTiledBg(0,menu_layer,"clear_screen");
+
+	NF_CreateTiledBg(0,map_layer,"map0");
+	NF_CreateTiledBg(1,map_layer,"map0");
+	add_object(0,map_layer,"grass");
+
+	render();
+
+	NF_CreateTiledBg(1,map_layer,"map0");
+	NF_ScrollBg(1,map_layer,64,0);
+	render();
+
+	bool menu_choice={cursor_menu("title","title_bottom")};
+	
+	if(menu_choice==true)
+	{
+		NF_CreateTiledBg(0,menu_layer,"power_msg");
+		render();
+		NF_CreateTiledBg(1,menu_layer,"power_msg");
+		render();
+		u8 i=0;
+		while(i==0){};//loop until shut down
+	}
+
+	//------------
+}
 
 void main_menu(void)
 {
@@ -1207,6 +1251,15 @@ void main_menu(void)
 		{
 			selecting = false;
 		}
+		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 65, 26) == true))
+		{
+			reset();
+			swiWaitForVBlank();
+			NF_CreateTiledBg(0, menu_layer, "main_menu0");
+			title_menu();
+			input_delay.delay = 0;
+			difficulty = 3;
+		}
 		swiWaitForVBlank();
 		render();
 		swiWaitForVBlank();
@@ -1234,7 +1287,6 @@ void difficulty_menu()
 
 	while (selecting)
 	{
-
 		scanKeys(); //get  button input
 
 		if ((keysHeld() > 0) & (input_delay.delay < current_msec))
@@ -1283,8 +1335,118 @@ void difficulty_menu()
 	NF_CreateTiledBg(1, menu_layer, "game_touch");
 }
 
-//pre-define pause function?
-bool pause_game();
+bool cursor_menu(char* menu_img_top ,char* menu_img_bottom)
+{
+	s8 selected = {0};
+	s8 prev_selected = selected;
+	bool confirmed=false;
+
+	touch_text_render=false;//make text layer not render on touch screen
+
+	u32 backup_msec = current_msec;
+	u32 backup_sec = current_sec;
+	u32 backup_frame_in_sec = frame_in_sec;
+
+	struct Timer input_delay = {current_msec + 120};
+
+	NF_ClearTextLayer16(1, text_layer);
+	NF_UpdateTextLayers();
+	NF_CreateTiledBg(0, menu_layer, menu_img_top);
+	NF_CreateTiledBg(1, menu_layer, menu_img_bottom);
+	create_sprite(1, 0, 0, 0);
+	NF_SpriteLayer(1, 0, 0); //make it so that the sprite displays in front on the menu
+	NF_SpriteRotScale(1, 0, 0, 388, 358);
+
+	while(confirmed==false)
+	{
+		scanKeys();
+
+		if(input_delay.delay<=current_msec)
+		{
+			//get input:
+			//buttons:
+
+			switch(keysHeld())
+			{
+				case KEY_UP:
+					selected--;
+				break;
+				case KEY_DOWN:
+					selected++;
+				break;
+				case KEY_A:
+					confirmed=true;
+				break;
+			}
+
+			//touch:
+			if (touch_box(48,40,160,40))
+			{
+				if (selected==0)
+				{
+					confirmed=true;
+				}
+				else
+				{
+				selected--;
+				}
+			}
+			else if (touch_box(48,112,160,40))
+			{
+				if (selected==1)
+				{
+					confirmed=true;
+				}
+				else
+				{
+				selected++;
+				}
+			}
+
+			if (selected!=prev_selected)
+			{
+				input_delay.delay=current_msec+120;
+			}
+		}
+
+		//cap S8 selected of:
+		if(selected<=-1)
+		{
+			selected=1;
+		}
+		else if(selected>=2)
+		{
+			selected=0;
+		}
+
+		switch(selected)
+		{
+			case 0:
+				NF_MoveSprite(1,0,48+16,40-4);
+			break;
+			case 1:
+				NF_MoveSprite(1,0,48+16,112-4);
+			break;
+		}
+
+		prev_selected=selected;
+
+		render();
+		update_current_time();
+	}
+
+	NF_DeleteSprite(1,0);
+	NF_CreateTiledBg(0,menu_layer,"clear_screen");
+	NF_CreateTiledBg(1,menu_layer,"game_touch");
+
+	touch_text_render=true;
+
+	current_msec = backup_msec;
+	current_sec = backup_sec;
+	frame_in_sec = backup_frame_in_sec;
+	
+	return selected;
+}
 
 void spawn_hole()
 {
@@ -1301,7 +1463,7 @@ void spawn_hole()
 	}
 	else
 	{
-		make_16x16_tile(1, item_layer, hole_x, hole_y, 1);
+		make_16x16_tile(0,1, item_layer, hole_x, hole_y, 1);
 	}
 }
 
@@ -1309,19 +1471,19 @@ void replace_item(u8 tile, s8 tile_2)
 {
 	if (get_player_tile(item_layer) == tile)
 	{
-		make_16x16_tile(tile_2, item_layer, player.collision_x, player.collision_y, 1);
+		make_16x16_tile(0,tile_2, item_layer, player.collision_x, player.collision_y, 1);
 	}
 	else if (get_player_tile(item_layer) == tile + 1)
 	{
-		make_16x16_tile(tile_2, item_layer, player.collision_x - 1, player.collision_y, 1);
+		make_16x16_tile(0,tile_2, item_layer, player.collision_x - 1, player.collision_y, 1);
 	}
 	else if (get_player_tile(item_layer) == tile + 2)
 	{
-		make_16x16_tile(tile_2, item_layer, player.collision_x, player.collision_y - 1, 1);
+		make_16x16_tile(0,tile_2, item_layer, player.collision_x, player.collision_y - 1, 1);
 	}
 	else if (get_player_tile(item_layer) == tile + 3)
 	{
-		make_16x16_tile(tile_2, item_layer, player.collision_x - 1, player.collision_y - 1, 1);
+		make_16x16_tile(0,tile_2, item_layer, player.collision_x - 1, player.collision_y - 1, 1);
 	}
 }
 
@@ -1396,7 +1558,7 @@ void do_physics()
 
 void game_over()
 {
-	enemies_hide();
+	enemies_layer(item_layer);
 
 	NF_CreateTiledBg(0, menu_layer, "game_over");
 	NF_CreateTiledBg(1, menu_layer, "game_over_touch");
@@ -1429,6 +1591,7 @@ void game_over()
 int main(void)
 {
 	init();
+	title_menu();
 	while (1)
 	{
 		scanKeys();
@@ -1437,6 +1600,7 @@ int main(void)
 		scanKeys();
 
 		main_menu();
+
 		difficulty_menu();
 
 		clear_map(menu_layer, 0, 1);
@@ -1457,11 +1621,17 @@ int main(void)
 			u32 button = keysHeld();
 			if ((button == KEY_START) || (button == KEY_LID) || (touch_box(205, 163, 30, 20) && current_msec >= 520))
 			{
-				if (pause_game() == true)
+				enemies_layer(item_layer);
+				if (cursor_menu("pause_menu_top","pause_menu") == true)
 				{
 					reset_game = true;
-					enemies_hide();
+					
 				}
+				else
+				{
+					enemies_layer(text_layer);
+				}
+				
 			}
 			player_movement(button);
 
@@ -1480,7 +1650,7 @@ int main(void)
 
 			if (items_timer.delay <= current_sec)
 			{
-				add_object(item_layer, "item");
+				add_object(0,item_layer, "item");
 				items_timer.delay = current_sec + 7 + difficulty;
 			}
 			//----------
@@ -1513,7 +1683,7 @@ int main(void)
 			case 4:
 				if (player.player_x <= 256 && player.player_y <= 192)
 				{
-					make_16x16_tile(75, item_layer, player.player_x, player.player_y, 0);
+					make_16x16_tile(0,75, item_layer, player.player_x, player.player_y, 0);
 				}
 
 				if (player.anim_delay <= current_msec)
@@ -1542,107 +1712,4 @@ int main(void)
 		reset_game = false;
 	}
 	return 0;
-}
-
-bool pause_game()
-{
-	NF_ClearTextLayer16(1, text_layer);
-	NF_UpdateTextLayers();
-	s8 selected = {0};
-	s8 prev_selected = selected;
-	paused = true;
-	bool confirmed = false;
-	struct Timer input_delay = {current_msec + 1200};
-	bool reset_game = false;
-	u32 backup_msec = current_msec;
-	u32 backup_sec = current_sec;
-	u32 backup_frame_in_sec = frame_in_sec;
-	NF_CreateTiledBg(1, menu_layer, "pause_menu");
-	create_sprite(1, 0, 0, 0);
-	NF_SpriteLayer(1, 0, 0); //make it so that the sprite displays in front on the menu
-	NF_SpriteRotScale(1, 0, 0, 388, 342);
-	while (paused)
-	{
-		swiWaitForVBlank();
-		scanKeys(); //scan input
-
-		switch (keysHeld())
-		{
-		case KEY_DOWN:
-			selected++;
-			break;
-		case KEY_UP:
-			selected--;
-			break;
-		case KEY_A:
-			confirmed = true;
-			break;
-		default:
-			break;
-		}
-
-		if (input_delay.delay <= current_msec)
-		{
-			if (prev_selected != selected)
-			{
-				input_delay.delay = current_msec + 420;
-			}
-		}
-
-		if (selected == 0)
-		{
-			if (confirmed)
-			{
-				paused = false;
-			}
-			NF_MoveSprite(1, 0, 60, 54);
-			if (touch_box(20, 60, 222, 46))
-			{
-				confirmed = true;
-			}
-			if (touch_box(20, 128, 222, 46))
-			{
-				selected = 1;
-				input_delay.delay = current_msec + 920;
-			}
-		}
-		else if (selected == 1)
-		{
-
-			if (confirmed)
-			{
-				paused = false;
-				reset_game = true;
-			}
-			NF_MoveSprite(1, 0, 60, 124);
-			if (touch_box(20, 60, 222, 46))
-			{
-				selected = 0;
-				input_delay.delay = current_msec + 920;
-			}
-			if (touch_box(20, 128, 222, 46))
-			{
-				confirmed = true;
-			}
-		}
-
-		else if ((prev_selected != selected) && (input_delay.delay <= current_msec))
-		{
-			selected = prev_selected;
-			confirmed = false;
-		}
-		prev_selected = selected;
-		update_current_time();
-		render();
-	}
-
-	NF_CreateTiledBg(1, menu_layer, "game_touch");
-	NF_DeleteSprite(1, 0);
-	if (reset_game == false)
-	{
-		current_sec = backup_sec;
-		current_msec = backup_msec;
-		frame_in_sec = backup_frame_in_sec;
-	}
-	return reset_game;
 }

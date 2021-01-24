@@ -67,9 +67,9 @@ __meta__ = {
 
 [node name="button_right" type="Button" parent="background"]
 margin_left = 960.0
-margin_top = 288.0
+margin_top = 280.0
 margin_right = 1172.0
-margin_bottom = 494.0
+margin_bottom = 486.0
 rect_scale = Vector2( 0.6, 0.7 )
 mouse_default_cursor_shape = 2
 custom_styles/hover = SubResource( 4 )

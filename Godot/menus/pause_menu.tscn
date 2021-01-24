@@ -11,7 +11,7 @@ font_data = ExtResource( 2 )
 [sub_resource type="Theme" id=2]
 default_font = SubResource( 1 )
 
-[sub_resource type="StyleBoxEmpty" id=8]
+[sub_resource type="StyleBoxEmpty" id=3]
 
 [sub_resource type="StyleBoxEmpty" id=4]
 
@@ -23,11 +23,11 @@ font_data = ExtResource( 2 )
 size = 88
 font_data = ExtResource( 2 )
 
-[sub_resource type="StyleBoxEmpty" id=9]
+[sub_resource type="StyleBoxEmpty" id=7]
 
-[sub_resource type="StyleBoxEmpty" id=10]
+[sub_resource type="StyleBoxEmpty" id=8]
 
-[sub_resource type="DynamicFont" id=7]
+[sub_resource type="DynamicFont" id=9]
 size = 88
 font_data = ExtResource( 2 )
 
@@ -62,7 +62,7 @@ focus_neighbour_bottom = NodePath("../quit_button")
 focus_next = NodePath("../quit_button")
 focus_previous = NodePath("../quit_button")
 mouse_default_cursor_shape = 2
-custom_styles/hover = SubResource( 8 )
+custom_styles/hover = SubResource( 3 )
 custom_styles/focus = SubResource( 4 )
 custom_fonts/font = SubResource( 5 )
 text = "Continue"
@@ -90,8 +90,8 @@ focus_neighbour_top = NodePath("../continue_button")
 focus_next = NodePath("../continue_button")
 focus_previous = NodePath("../continue_button")
 mouse_default_cursor_shape = 2
-custom_styles/hover = SubResource( 9 )
-custom_styles/focus = SubResource( 10 )
+custom_styles/hover = SubResource( 7 )
+custom_styles/focus = SubResource( 8 )
 custom_fonts/font = SubResource( 5 )
 text = "Quit"
 flat = true
@@ -117,14 +117,14 @@ margin_left = 594.286
 margin_top = 68.5714
 margin_right = 1248.28
 margin_bottom = 167.571
-custom_fonts/font = SubResource( 7 )
+custom_fonts/font = SubResource( 9 )
 text = "Pause menu"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="cursor" type="Sprite" parent="pause_menu_panel"]
-position = Vector2( 625.16, 435.889 )
+position = Vector2( 625.16, 435 )
 scale = Vector2( 0.542859, 0.485714 )
 texture = ExtResource( 4 )
 offset = Vector2( 480, 80 )

@@ -34,10 +34,10 @@ func _process(_delta):
 		max_total_score=SceneGlobals.player_score+SceneGlobals.total_score
 		added_score=SceneGlobals.player_score
 
-	if SceneGlobals.player_score>=SceneGlobals.hi_scores[SceneGlobals.level][SceneGlobals.difficulty]:
-		SceneGlobals.hi_scores[SceneGlobals.level][SceneGlobals.difficulty]=SceneGlobals.player_score
+	if SceneGlobals.player_score>=SceneGlobals.hi_scores[SceneGlobals.level][SceneGlobals.difficulty-1]:
+		SceneGlobals.hi_scores[SceneGlobals.level][SceneGlobals.difficulty-1]=SceneGlobals.player_score
 
-	hi_score_text.text="High Score: "+var2str(SceneGlobals.hi_scores[SceneGlobals.level][SceneGlobals.difficulty])
+	hi_score_text.text="High Score: "+var2str(SceneGlobals.hi_scores[SceneGlobals.level][SceneGlobals.difficulty-1])
 
 	added_score-=100
 	if added_score<=-1:

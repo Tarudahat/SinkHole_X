@@ -1,7 +1,7 @@
 extends Node2D
 
 onready var lvl_name=get_node("bg/lvl_name")
-
+onready var i=0
 
 func _ready():
 	lvl_name.text=SceneGlobals.levels[SceneGlobals.new_lvl_id]
@@ -9,10 +9,11 @@ func _ready():
 	SceneGlobals.new_lvl_id=-1	
 
 func _process(_delta):
-	pass
+	i+=1
+
 
 func _input(event):
-	if (Input.is_action_just_pressed("in_accept")) or (event is InputEventMouseButton):
+	if (Input.is_action_just_pressed("in_accept")) or ((event is InputEventMouseButton)and(i>=6)):
 
 		for i_ in range(len(SceneGlobals.levels)):
 			if SceneGlobals.unlocked[i_]==false and SceneGlobals.total_score>=SceneGlobals.prices[i_]:

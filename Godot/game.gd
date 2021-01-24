@@ -271,18 +271,18 @@ func update_fire_enemy(enemy_):
 		
 func update_ghost_enemy(enemy_):
 	if player.position.x>enemy_.position.x:
-		enemy_.position.x+=0.1+difficulty/2
+		enemy_.position.x+=0.21*difficulty
 	if player.position.x<enemy_.position.x:
-		enemy_.position.x-=0.1+difficulty/2
+		enemy_.position.x-=0.21*difficulty
 	if player.position.y>enemy_.position.y:
-		enemy_.position.y+=0.1+difficulty/2
+		enemy_.position.y+=0.21*difficulty
 	if player.position.y<enemy_.position.y:
-		enemy_.position.y-=0.1+difficulty/2
+		enemy_.position.y-=0.21*difficulty
 
 	if enemy_.moves<=OS.get_system_time_msecs():
 		if enemy_.get_child(0).get_animation()=="default":
 			enemy_.get_child(0).play("poofo")
-			enemy_.moves=OS.get_system_time_msecs()+240
+			enemy_.moves=OS.get_system_time_msecs()+220
 		else:
 			enemy_.position=get_rnd_vector2D("player")
 			enemy_.moves=OS.get_system_time_msecs()+1520*rand_range(2,5)

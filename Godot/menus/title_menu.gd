@@ -9,6 +9,9 @@ onready var selected_level=0
 onready var change_info=false
 onready var done = false
 
+func _ready():
+	SceneGlobals.save_game()
+
 func _input(event):
 	
 	if (button_left.pressed==true and (event is InputEventMouseButton )) or (Input.is_action_just_released("in_left")==true) :
@@ -30,7 +33,7 @@ func _input(event):
 		level_name.text=SceneGlobals.levels[selected_level]
 		change_info=false
 
-	if $button_cancel.pressed==true:
+	if $button_cancel.pressed==true or Input.is_action_just_pressed("ui_cancel"):
 		# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://menus/title_screen.tscn")
 	if (button_ok.pressed==true or Input.is_action_just_pressed("in_accept")) and SceneGlobals.total_score>=SceneGlobals.prices[selected_level]:
