@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://assets/thumbnails/thumbnail_0.png" type="Texture" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://menus/title_menu.gd" type="Script" id=5]
 [ext_resource path="res://assets/font.tres" type="DynamicFont" id=6]
 [ext_resource path="res://menus/button_cancel.tscn" type="PackedScene" id=7]
+[ext_resource path="res://menus/button_score_board.tscn" type="PackedScene" id=8]
 
 [sub_resource type="DynamicFont" id=1]
 size = 60
@@ -134,3 +135,9 @@ __meta__ = {
 }
 
 [node name="button_cancel" parent="." instance=ExtResource( 7 )]
+
+[node name="Control" parent="." instance=ExtResource( 8 )]
+margin_left = 142.544
+margin_top = 35.6359
+margin_right = 334.544
+margin_bottom = 163.636

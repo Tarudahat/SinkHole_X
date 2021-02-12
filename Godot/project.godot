@@ -15,7 +15,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="SinkHole X"
+config/name="SinkHole"
 config/description="SinkHole"
 run/main_scene="res://menus/title_screen.tscn"
 boot_splash/use_filter=false

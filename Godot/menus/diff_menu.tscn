@@ -101,6 +101,9 @@ mouse_default_cursor_shape = 2
 custom_fonts/font = SubResource( 7 )
 text = "Ok"
 flat = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="shadow" type="Label" parent="background/button_ok"]
 show_behind_parent = true
