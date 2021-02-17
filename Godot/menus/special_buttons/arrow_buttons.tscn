@@ -1,0 +1,50 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://assets/GUI/arrow_button.png" type="Texture" id=1]
+[ext_resource path="res://menus/special_buttons/arrow_buttons.gd" type="Script" id=2]
+
+[sub_resource type="StyleBoxEmpty" id=1]
+
+[sub_resource type="StyleBoxEmpty" id=2]
+
+[sub_resource type="StyleBoxEmpty" id=3]
+
+[sub_resource type="StyleBoxEmpty" id=4]
+
+[node name="arrow_buttons" type="Control"]
+margin_right = 40.0
+margin_bottom = 40.0
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="button_left" type="Button" parent="."]
+margin_left = 320.0
+margin_top = 280.0
+margin_right = 532.0
+margin_bottom = 486.0
+rect_scale = Vector2( -0.6, 0.7 )
+mouse_default_cursor_shape = 2
+custom_styles/hover = SubResource( 1 )
+custom_styles/focus = SubResource( 2 )
+icon = ExtResource( 1 )
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="button_right" type="Button" parent="."]
+margin_left = 960.0
+margin_top = 280.0
+margin_right = 1172.0
+margin_bottom = 486.0
+rect_scale = Vector2( 0.6, 0.7 )
+mouse_default_cursor_shape = 2
+custom_styles/hover = SubResource( 3 )
+custom_styles/focus = SubResource( 4 )
+icon = ExtResource( 1 )
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false
+}

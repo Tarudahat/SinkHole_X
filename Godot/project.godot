@@ -35,6 +35,7 @@ SceneGlobals="*res://extra_scripts/scene_globals.gd"
 window/size/width=1280
 window/size/height=768
 window/size/fullscreen=true
+window/energy_saving/keep_screen_on=false
 window/stretch/mode="viewport"
 
 [input]

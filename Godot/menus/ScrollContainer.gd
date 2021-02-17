@@ -10,6 +10,8 @@ var swipe_mouse_start
 var swipe_mouse_times = []
 var swipe_mouse_positions = []
 
+var scroll_movement=0
+
 func _input(ev):
 	if ev is InputEventMouseButton:
 		if ev.pressed:
@@ -46,3 +48,14 @@ func _input(ev):
 		set_v_scroll(swipe_start.y - delta.y)
 		swipe_mouse_times.append(OS.get_ticks_msec())
 		swipe_mouse_positions.append(ev.position)
+	
+func _process(_delta):
+	#gamepad/keys support:
+	scroll_movement=0
+	if Input.is_action_pressed("in_up"):
+		scroll_movement-=15
+	elif Input.is_action_pressed("in_down"):
+		scroll_movement+=15
+
+	set_v_scroll(get_v_scroll()+scroll_movement)
+

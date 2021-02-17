@@ -29,12 +29,11 @@ func _input(_event):
 		#accepting input for the buttons
 		if selected_button==1 and (button_quit.pressed==true or Input.is_action_just_pressed("in_accept")):
 			get_tree().paused=false
-			SceneGlobals.total_score+=self.get_parent().get_parent().player.score
 			# warning-ignore:return_value_discarded
 			get_tree().change_scene("res://menus/title_menu.tscn")
 		elif selected_button==0 and (button_continue.pressed==true or Input.is_action_just_pressed("in_accept")):
 			get_parent().visible=false
-			get_tree().paused=false
+			get_tree().paused=false 
 
 		if selected_button==0 and button_quit.pressed==true:
 			selected_button=1

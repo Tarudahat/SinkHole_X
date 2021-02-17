@@ -3,7 +3,7 @@
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://assets/GUI/long_tab.png" type="Texture" id=2]
 [ext_resource path="res://assets/GUI/empty_.png" type="Texture" id=3]
-[ext_resource path="res://menus/button_cancel.tscn" type="PackedScene" id=4]
+[ext_resource path="res://menus/special_buttons/button_cancel.tscn" type="PackedScene" id=4]
 [ext_resource path="res://assets/font.tres" type="DynamicFont" id=5]
 [ext_resource path="res://menus/scores.gd" type="Script" id=6]
 [ext_resource path="res://menus/ScrollContainer.gd" type="Script" id=7]
@@ -12,11 +12,11 @@
 size = 75
 font_data = ExtResource( 1 )
 
-[sub_resource type="DynamicFont" id=3]
+[sub_resource type="DynamicFont" id=2]
 size = 40
 font_data = ExtResource( 1 )
 
-[sub_resource type="DynamicFont" id=2]
+[sub_resource type="DynamicFont" id=3]
 size = 62
 font_data = ExtResource( 1 )
 
@@ -63,8 +63,8 @@ margin_left = 136.0
 margin_top = 264.0
 margin_right = 1136.0
 margin_bottom = 3830.59
-custom_fonts/italics_font = SubResource( 3 )
-custom_fonts/bold_font = SubResource( 2 )
+custom_fonts/italics_font = SubResource( 2 )
+custom_fonts/bold_font = SubResource( 3 )
 custom_fonts/normal_font = ExtResource( 5 )
 bbcode_enabled = true
 bbcode_text = "[center]

@@ -1,29 +1,21 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://menus/diff_menu.gd" type="Script" id=2]
-[ext_resource path="res://assets/GUI/arrow_button.png" type="Texture" id=3]
+[ext_resource path="res://menus/special_buttons/arrow_buttons.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/GUI/menu_panel.png" type="Texture" id=4]
 [ext_resource path="res://assets/font.tres" type="DynamicFont" id=5]
-[ext_resource path="res://menus/button_cancel.tscn" type="PackedScene" id=6]
+[ext_resource path="res://menus/special_buttons/button_cancel.tscn" type="PackedScene" id=6]
 
 [sub_resource type="DynamicFont" id=1]
 size = 60
 font_data = ExtResource( 1 )
 
-[sub_resource type="StyleBoxEmpty" id=2]
-
-[sub_resource type="StyleBoxEmpty" id=3]
-
-[sub_resource type="StyleBoxEmpty" id=4]
-
-[sub_resource type="StyleBoxEmpty" id=5]
-
-[sub_resource type="DynamicFont" id=6]
+[sub_resource type="DynamicFont" id=2]
 size = 72
 font_data = ExtResource( 1 )
 
-[sub_resource type="DynamicFont" id=7]
+[sub_resource type="DynamicFont" id=3]
 size = 50
 font_data = ExtResource( 1 )
 
@@ -50,42 +42,12 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="button_left" type="Button" parent="background"]
-margin_left = 320.0
-margin_top = 280.0
-margin_right = 532.0
-margin_bottom = 486.0
-rect_scale = Vector2( -0.6, 0.7 )
-mouse_default_cursor_shape = 2
-custom_styles/hover = SubResource( 2 )
-custom_styles/focus = SubResource( 3 )
-icon = ExtResource( 3 )
-flat = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="button_right" type="Button" parent="background"]
-margin_left = 960.0
-margin_top = 280.0
-margin_right = 1172.0
-margin_bottom = 486.0
-rect_scale = Vector2( 0.6, 0.7 )
-mouse_default_cursor_shape = 2
-custom_styles/hover = SubResource( 4 )
-custom_styles/focus = SubResource( 5 )
-icon = ExtResource( 3 )
-flat = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
 [node name="diff_name" type="Label" parent="background"]
 margin_left = 423.0
 margin_top = 320.0
 margin_right = 867.0
 margin_bottom = 393.0
-custom_fonts/font = SubResource( 6 )
+custom_fonts/font = SubResource( 2 )
 text = "Hard"
 align = 1
 __meta__ = {
@@ -98,7 +60,7 @@ margin_top = 640.0
 margin_right = 1144.0
 margin_bottom = 720.0
 mouse_default_cursor_shape = 2
-custom_fonts/font = SubResource( 7 )
+custom_fonts/font = SubResource( 3 )
 text = "Ok"
 flat = true
 __meta__ = {
@@ -117,5 +79,8 @@ text = "Ok"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="arrow_buttons" parent="background" instance=ExtResource( 3 )]
+default_value = 2
 
 [node name="button_cancel" parent="." instance=ExtResource( 6 )]
