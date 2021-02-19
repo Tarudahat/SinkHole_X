@@ -9,6 +9,7 @@ onready var can_spawn=true
 
 onready var linked_node=Node
 onready var moves=0
+onready var death_timer=0
 
 func _on_enemy_body_entered(_body):
 	collided_with_player = true

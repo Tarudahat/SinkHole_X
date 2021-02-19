@@ -42,6 +42,7 @@ onready var prop_id = 0
 onready var temp_tm = 0
 onready var temp_tm2 = 0
 onready var temp_tm3 = 0
+onready var temp_tm4 = 0
 onready var illegal_positions=[]
 
 onready var item_delay=OS.get_system_time_secs()+7
@@ -105,6 +106,7 @@ func spawn_enemy(enemy_index,direction_,enemy_x_,enemy_y_):
 		new_ball.position=Vector2(200*64+32,200*64+32)
 		new_ball.enemy_type=2
 		new_ball.linked_node=new_enemy
+		new_enemy.linked_node=new_ball
 	elif enemy_index==2:
 		var new_target=target_node.instance()
 		var new_enemy=fire_ball.instance()
@@ -194,13 +196,30 @@ func get_enemy_collision():
 		if enemy_used[6]==true and enemy_.enemy_type==5:
 			update_ghost_enemy(enemy_)
 
-		if enemy_.collided_with_player == true:
+		if enemy_.death_timer<=OS.get_system_time_secs():
+			enemy_.visible=true
 
+		if player.invincible==true and enemy_.collided_with_player:
+			enemy_.collided_with_player = false
+			enemy_.visible=false
+			enemy_.death_timer=OS.get_system_time_secs()+10
+			if enemy_.enemy_type==1:
+				enemy_.linked_node.visible=false
+				enemy_.linked_node.death_timer=OS.get_system_time_secs()+10
+
+
+		if enemy_.collided_with_player == true:
+			
 			if enemy_.enemy_type==3:
 				if enemy_.position.y-16>enemy_.linked_node.position.y-90:
 					player.player_state=1
 				elif enemy_.position.y-16<=enemy_.linked_node.position.y-90:
 					enemy_.collided_with_player=false
+			elif enemy_.enemy_type==5:
+				if enemy_.enemy_direction>=OS.get_system_time_secs():
+					enemy_.collided_with_player = false
+				else:
+					player.player_state=1
 			else:
 				player.player_state=1
 
@@ -284,6 +303,7 @@ func update_ghost_enemy(enemy_):
 			enemy_.get_child(0).play("poofo")
 			enemy_.moves=OS.get_system_time_msecs()+220
 		else:
+			enemy_.enemy_direction=OS.get_system_time_secs()+2
 			enemy_.position=get_rnd_vector2D("player")
 			enemy_.moves=OS.get_system_time_msecs()+1520*rand_range(2,5)
 			enemy_.get_child(0).play("default")
@@ -365,15 +385,17 @@ func do_physics():
 			elif get_colider(map_object_layer)==8:
 				player.score+=10000
 				replace_item(map_object_layer,8,-1)
-			elif get_colider(map_object_layer)==9:
+			elif get_colider(map_object_layer)==13:
 				player.player_state=4
 				player.speed=1
 				player.sprite.play("shield")
 				temp_tm3=OS.get_system_time_secs()+6
-				replace_item(map_object_layer,9,-1)
-			elif get_colider(map_object_layer)==13:
-				#free item slot
 				replace_item(map_object_layer,13,-1)
+			elif get_colider(map_object_layer)==9:
+				player.invincible=true
+				player.sprite.play("SP")
+				temp_tm4=OS.get_system_time_secs()+6
+				replace_item(map_object_layer,9,-1)
 		if get_colider(map_object_layer)>=10 && get_colider(map_object_layer) <=12:
 			player.player_state=1
 	if enemy_used[0]==true:
@@ -535,6 +557,12 @@ func _process(_delta):
 		if temp_tm3<=OS.get_system_time_secs():
 			player.sprite.play("default")
 			player.player_state=0
+	if player.invincible==true:
+		if player.player_state==4:
+			player.invincible=false
+		if temp_tm4<=OS.get_system_time_secs():
+			player.sprite.play("default")
+			player.invincible=false
 
 	do_physics()
 	

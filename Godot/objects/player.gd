@@ -8,6 +8,7 @@ onready var bridges=0
 onready var speed=1
 onready var sprite=self.get_child(0)
 var player_collision
+var invincible = false
 
 func _process(_delta):
 	player_x=0

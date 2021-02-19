@@ -1,11 +1,15 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=14 format=2]
 
+[ext_resource path="res://menus/special_buttons/arrow_buttons.tscn" type="PackedScene" id=1]
+[ext_resource path="res://assets/thumbnails/thumbnail_0.png" type="Texture" id=2]
 [ext_resource path="res://assets/GUI/empty_.png" type="Texture" id=3]
 [ext_resource path="res://assets/font.tres" type="DynamicFont" id=4]
 [ext_resource path="res://assets/GUI/long_tab.png" type="Texture" id=5]
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=6]
 [ext_resource path="res://menus/TextEdit_limit.gd" type="Script" id=7]
 [ext_resource path="res://menus/ScrollContainer.gd" type="Script" id=8]
+[ext_resource path="res://menus/lvl_customizer.gd" type="Script" id=9]
+[ext_resource path="res://menus/special_buttons/nice_toggel.tscn" type="PackedScene" id=10]
 
 [sub_resource type="DynamicFont" id=1]
 size = 75
@@ -13,9 +17,13 @@ font_data = ExtResource( 6 )
 
 [sub_resource type="StyleBoxEmpty" id=3]
 
+[sub_resource type="StyleBoxFlat" id=4]
+bg_color = Color( 0.258824, 0.258824, 0.258824, 1 )
+
 [node name="Control" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+script = ExtResource( 9 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -60,21 +68,23 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Label" type="Label" parent="TextureRect/ScrollContainer/TextureRect"]
+[node name="lvl_code" type="Label" parent="TextureRect/ScrollContainer/TextureRect"]
 margin_left = 472.0
 margin_top = 276.0
 margin_right = 797.0
-margin_bottom = 326.0
+margin_bottom = 432.0
 custom_fonts/font = ExtResource( 4 )
-text = "Level Code:"
+text = "Level Code:
+
+   ------"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TextEdit" type="TextEdit" parent="TextureRect/ScrollContainer/TextureRect/Label"]
-margin_left = 24.0
+[node name="TextEdit" type="TextEdit" parent="TextureRect/ScrollContainer/TextureRect/lvl_code"]
+margin_left = 16.0
 margin_top = 64.0
-margin_right = 341.0
+margin_right = 333.0
 margin_bottom = 136.0
 custom_styles/normal = SubResource( 3 )
 custom_fonts/font = ExtResource( 4 )
@@ -85,3 +95,100 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 MAX_CHAR = 6
+
+[node name="arrow_buttons" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 1 )]
+margin_left = 184.0
+margin_top = 420.0
+margin_right = 224.0
+margin_bottom = 460.0
+rect_scale = Vector2( 0.7, 0.7 )
+
+[node name="lvl_name" type="Label" parent="TextureRect/ScrollContainer/TextureRect/arrow_buttons"]
+margin_left = 293.333
+margin_top = 506.667
+margin_right = 981.333
+margin_bottom = 618.667
+custom_fonts/font = ExtResource( 4 )
+text = "Plains"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="TextureRect/ScrollContainer/TextureRect/arrow_buttons"]
+margin_left = 466.667
+margin_top = 106.667
+margin_right = 919.667
+margin_bottom = 226.667
+custom_fonts/font = ExtResource( 4 )
+text = "Level base:"
+
+[node name="Panel" type="Panel" parent="TextureRect/ScrollContainer/TextureRect/arrow_buttons"]
+margin_left = 427.0
+margin_top = 227.0
+margin_right = 840.0
+margin_bottom = 480.0
+custom_styles/panel = SubResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="thumbnail" type="TextureRect" parent="TextureRect/ScrollContainer/TextureRect/arrow_buttons"]
+margin_left = 440.589
+margin_top = 237.643
+margin_right = 1720.59
+margin_bottom = 1005.64
+rect_scale = Vector2( 0.3, 0.3 )
+texture = ExtResource( 2 )
+stretch_mode = 5
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="items" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 10 )]
+margin_left = 256.0
+margin_top = 900.0
+margin_right = 512.0
+margin_bottom = 972.0
+
+[node name="speed x2" parent="TextureRect/ScrollContainer/TextureRect/items" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 72.0
+margin_right = 403.0
+margin_bottom = 144.0
+text = "Speed x2:"
+
+[node name="bridge" parent="TextureRect/ScrollContainer/TextureRect/items" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 144.0
+margin_right = 333.0
+margin_bottom = 216.0
+text = "Bridge:"
+
+[node name="ROAD ROLLER DA" parent="TextureRect/ScrollContainer/TextureRect/items" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 216.0
+margin_right = 468.0
+margin_bottom = 288.0
+text = "Road Roller:"
+
+[node name="score up" parent="TextureRect/ScrollContainer/TextureRect/items" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 288.0
+margin_right = 468.0
+margin_bottom = 360.0
+text = "Score +10k:"
+
+[node name="za wardo" parent="TextureRect/ScrollContainer/TextureRect/items" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 360.0
+margin_right = 628.0
+margin_bottom = 432.0
+text = "Broken steering:"
+
+[node name="shield" parent="TextureRect/ScrollContainer/TextureRect/items" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 432.0
+margin_right = 438.0
+margin_bottom = 504.0
+text = "Armored Car:"
