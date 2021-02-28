@@ -106,3 +106,4 @@ margin_top = 16.0
 margin_right = 168.0
 margin_bottom = 149.0
 rect_scale = Vector2( 0.6, 0.6 )
+stretch_mode = 5
