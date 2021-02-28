@@ -101,9 +101,8 @@ __meta__ = {
 [node name="button_cancel" parent="." instance=ExtResource( 7 )]
 
 [node name="Control" parent="." instance=ExtResource( 8 )]
-margin_left = 40.0
+margin_left = 48.0
 margin_top = 16.0
-margin_right = 168.0
-margin_bottom = 149.0
-rect_scale = Vector2( 0.6, 0.6 )
+margin_right = 112.0
+margin_bottom = 88.0
 stretch_mode = 5

@@ -94,7 +94,7 @@ texture = ExtResource( 5 )
 
 [node name="Control" parent="." instance=ExtResource( 6 )]
 margin_left = 8.0
-margin_top = 624.0
-margin_right = 136.0
-margin_bottom = 752.0
+margin_top = 688.0
+margin_right = 72.0
+margin_bottom = 760.0
 stretch_mode = 6

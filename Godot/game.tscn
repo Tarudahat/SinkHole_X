@@ -34,41 +34,45 @@ __meta__ = {
 }
 
 [node name="TouchScreenButton" type="TouchScreenButton" parent="GUI"]
-position = Vector2( 969.649, 336 )
-scale = Vector2( 0.8, 0.8 )
+position = Vector2( 1040, 440 )
+scale = Vector2( 0.6, 0.6 )
 normal = ExtResource( 4 )
 pressed = ExtResource( 4 )
 shape = SubResource( 1 )
+passby_press = true
 action = "in_up"
 visibility_mode = 1
 
 [node name="TouchScreenButton2" type="TouchScreenButton" parent="GUI"]
-position = Vector2( 840, 624 )
+position = Vector2( 945.236, 648 )
 rotation = -1.5811
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2( 0.6, 0.6 )
 normal = ExtResource( 4 )
 pressed = ExtResource( 4 )
 shape = SubResource( 1 )
+passby_press = true
 action = "in_left"
 visibility_mode = 1
 
 [node name="TouchScreenButton3" type="TouchScreenButton" parent="GUI"]
-position = Vector2( 1129.65, 752 )
+position = Vector2( 1160, 736 )
 rotation = 3.14155
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2( 0.6, 0.6 )
 normal = ExtResource( 4 )
 pressed = ExtResource( 4 )
 shape = SubResource( 1 )
+passby_press = true
 action = "in_down"
 visibility_mode = 1
 
 [node name="TouchScreenButton4" type="TouchScreenButton" parent="GUI"]
-position = Vector2( 1265.65, 464 )
+position = Vector2( 1256, 528 )
 rotation = 1.57046
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2( 0.6, 0.6 )
 normal = ExtResource( 4 )
 pressed = ExtResource( 4 )
 shape = SubResource( 1 )
+passby_press = true
 action = "in_right"
 visibility_mode = 1
 
@@ -78,6 +82,7 @@ scale = Vector2( 1.37054, 1.25255 )
 normal = ExtResource( 6 )
 pressed = ExtResource( 6 )
 shape = SubResource( 2 )
+passby_press = true
 action = "in_pause"
 visibility_mode = 1
 
