@@ -9,7 +9,7 @@ onready var diffs=["Sloth","Normal","Hard","Impossible"]
 func _ready():
 	$background/arrow_buttons.input_array=diffs
 
-func _input(event):
+func _input(_event):
 	selected_diff=$background/arrow_buttons.selected_item
 	$background/diff_name.text=diffs[selected_diff]
 	if button_ok.pressed==true or Input.is_action_just_pressed("in_accept"):

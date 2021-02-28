@@ -3,7 +3,7 @@ extends TextEdit
 export var MAX_CHAR=0
 var backup_text=""
 
-func _process(delta):
+func _process(_delta):
 
 	if self.text.is_valid_integer():
 		self.text=self.text.replace("\n","")

@@ -52,9 +52,9 @@ __meta__ = {
 
 [node name="total_score" type="Label" parent="panel"]
 margin_left = 296.0
-margin_top = 440.0
+margin_top = 448.0
 margin_right = 671.0
-margin_bottom = 543.0
+margin_bottom = 551.0
 rect_scale = Vector2( 0.8, 0.8 )
 custom_fonts/font = ExtResource( 3 )
 text = "Total Score: "
@@ -64,9 +64,9 @@ __meta__ = {
 
 [node name="HI" type="Label" parent="panel"]
 margin_left = 296.0
-margin_top = 536.0
+margin_top = 544.0
 margin_right = 636.0
-margin_bottom = 639.0
+margin_bottom = 647.0
 rect_scale = Vector2( 0.8, 0.8 )
 custom_fonts/font = ExtResource( 3 )
 text = "High Score: "

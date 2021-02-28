@@ -57,6 +57,7 @@ onready var spawn_hole_=true
 onready var hole_position = Vector2(0,0)
 onready var click_delay=0
 
+var redo_item=false
 
 func get_rnd_vector2D(str_):
 	random_x= round(rand_range(0.0,19))
@@ -124,10 +125,30 @@ func spawn_enemy(enemy_index,direction_,enemy_x_,enemy_y_):
 		new_enemy.moves=OS.get_system_time_msecs()+1520*rand_range(2,5)
 		new_enemy.enemy_type=5
 		
-	
+func create_road(layer, tile):
+	for i_x in range(20):
+		for i_y in range(4):
+
+			if i_y==0:
+				i_y=1
+			elif i_y==1:
+				i_y=3
+			elif i_y==2:
+				i_y=8
+			elif i_y==3:
+				i_y=10
+
+			layer.set_cell(i_x,i_y,tile)
+
 func spawn_enemies(redo_):
 	if enemy_used[0]==true:
 		if enemy_used[1]==true or redo_==true:
+			
+			if Customizer.using==true:
+				create_road(map_object_layer,-1)
+			if Customizer.level_base==3:
+				create_road(map_current,13)
+
 			for i in range(round(get_rnd_vector2D("").y/PI)+9):
 				if get_rnd_vector2D("").x>12 or i<5:
 					var rnd_=[round(get_rnd_vector2D("").y/1.755),round(get_rnd_vector2D("").y/7.81),round(get_rnd_vector2D("").x/PI),round(get_rnd_vector2D("").y*2.1876)]
@@ -151,9 +172,18 @@ func spawn_enemies(redo_):
 			var snow_enemies=0
 			while snow_enemies<round(rand_range(3,4)):
 				hole_position=get_rnd_vector2D("snow_man")
-				if !hole_position in illegal_positions:
-					spawn_enemy(1,-1,hole_position.x,hole_position.y)
-					snow_enemies+=1
+
+				if enemy_used[1]==true:
+					if hole_position.y<=3:
+						hole_position.y=3
+					if hole_position.y>=6:
+						hole_position.y=6 
+
+				if map_object_layer.get_cell(hole_position.x,hole_position.y+1)==-1:
+					if (!hole_position in illegal_positions):
+						spawn_enemy(1,-1,hole_position.x,hole_position.y)
+						
+						snow_enemies+=1
 				#why can't you append multiple things at once?
 				illegal_positions.append(Vector2(hole_position.x,hole_position.y))
 				illegal_positions.append(Vector2(hole_position.x,hole_position.y-1))
@@ -203,7 +233,9 @@ func get_enemy_collision():
 			enemy_.collided_with_player = false
 			enemy_.visible=false
 			enemy_.death_timer=OS.get_system_time_secs()+10
-			if enemy_.enemy_type==1:
+			if enemy_.enemy_type==4:
+				enemy_.visible=true
+			if enemy_.enemy_type==1 or  enemy_.enemy_type==3:
 				enemy_.linked_node.visible=false
 				enemy_.linked_node.death_timer=OS.get_system_time_secs()+10
 
@@ -216,7 +248,7 @@ func get_enemy_collision():
 				elif enemy_.position.y-16<=enemy_.linked_node.position.y-90:
 					enemy_.collided_with_player=false
 			elif enemy_.enemy_type==5:
-				if enemy_.enemy_direction>=OS.get_system_time_secs():
+				if enemy_.enemy_direction>=OS.get_system_time_msecs() or enemy_.visible==false:
 					enemy_.collided_with_player = false
 				else:
 					player.player_state=1
@@ -303,7 +335,7 @@ func update_ghost_enemy(enemy_):
 			enemy_.get_child(0).play("poofo")
 			enemy_.moves=OS.get_system_time_msecs()+220
 		else:
-			enemy_.enemy_direction=OS.get_system_time_secs()+2
+			enemy_.enemy_direction=OS.get_system_time_msecs()+750
 			enemy_.position=get_rnd_vector2D("player")
 			enemy_.moves=OS.get_system_time_msecs()+1520*rand_range(2,5)
 			enemy_.get_child(0).play("default")
@@ -403,6 +435,7 @@ func do_physics():
 
 	
 func add_object(map_,str_):
+	
 	if str_=="grass":
 		prop_id=1
 		for _dummy_1 in range(round(rand_range(7.0,12.0))):
@@ -416,9 +449,40 @@ func add_object(map_,str_):
 		prop_id=round(rand_range(5.0,10.0))
 		if prop_id>=9.2:
 			prop_id=13
+		
+		#absolute fucking garbage code
+		if Customizer.using==true:
+
+			if Customizer.using_items[0]==true:
+
+				if Customizer.using_items[1]==false and prop_id==7:
+					add_object(map_object_layer,"item")
+					redo_item=true
+				if Customizer.using_items[2]==false and prop_id==6:
+					add_object(map_object_layer,"item")
+					redo_item=true
+				if Customizer.using_items[3]==false and prop_id==13:
+					add_object(map_object_layer,"item")
+					redo_item=true
+				if Customizer.using_items[4]==false and prop_id==8:
+					add_object(map_object_layer,"item")
+					redo_item=true
+				if Customizer.using_items[5]==false and prop_id==5:
+					add_object(map_object_layer,"item")
+					redo_item=true
+				if Customizer.using_items[6]==false and prop_id==9:
+					add_object(map_object_layer,"item")
+					redo_item=true
+
+			if Customizer.using_items[0]==false:
+				prop_id=-1
+
 		hole_position=get_rnd_vector2D("")
-		if map_.get_cell(hole_position.x, hole_position.y)==-1:#check if tile is empty
+		if map_.get_cell(hole_position.x, hole_position.y)==-1 and redo_item==false:#check if tile is empty and if it should even put one down
 			map_.set_cell(hole_position.x, hole_position.y, prop_id)
+		
+		redo_item=false
+
 	elif str_=="rocks":
 		for _dummy_1 in range(round(rand_range(7.0,12.0))):
 			hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
@@ -435,6 +499,7 @@ func add_object(map_,str_):
 			for _dummy_1 in range(round(rand_range(25.0,35.0))):
 				hole_position=get_rnd_vector2D("")#re-useing this it's rnd either way
 				map_.set_cell(hole_position.x-1, hole_position.y, prop_id)
+	
 
 func game_over():
 	#warning-ignore:return_value_discarded
@@ -447,11 +512,14 @@ func _ready():
 		enemy_used.append(false)
 
 	gen_map(level)
-	spawn_enemies(false)
 	spawn_player()
+	spawn_enemies(false)
 	self.add_child(pause_menu)
 	
 func gen_map(map_index):
+	if Customizer.using==true:
+		map_index=Customizer.level_base
+
 	enemy_used[0]=true
 	if map_index==0:
 		enemy_used[0]=false
@@ -474,6 +542,8 @@ func gen_map(map_index):
 		map_current=map4.instance()
 		
 		random_x=round(rand_range(0.0,8.0))
+		if random_x==6 and Customizer.using==true:
+			random_x=5
 		var rnd_river=rivers.instance()
 		var river_=rnd_river.get_child(random_x)
 
@@ -485,11 +555,25 @@ func gen_map(map_index):
 	elif map_index==4:
 		map_current=map5.instance()
 		enemy_used[6]=true
+		
+
+	if Customizer.using==true:
+		enemy_used[0]=Customizer.using_enemies[0]
+
+		enemy_used[1]=Customizer.using_enemies[1]
+
+		enemy_used[2]=Customizer.using_enemies[2]
+		enemy_used[3]=Customizer.using_enemies[2]
+
+		enemy_used[4]=Customizer.using_enemies[3]
+		enemy_used[5]=Customizer.using_enemies[3]
+
+		enemy_used[6]=Customizer.using_enemies[4]
 
 	self.add_child(map_current)
 	map_object_layer= map_current.get_child(0)
 	self.move_child(map_current,0)
-	gen_props(map_current,level)
+	gen_props(map_current,map_index)
 	
 func gen_props(map_,map_index):
 	if map_index==0:

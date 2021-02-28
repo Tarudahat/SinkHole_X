@@ -9,8 +9,11 @@ onready var done = false
 func _ready():
 	SceneGlobals.save_game()
 	$background/arrow_buttons.input_array=SceneGlobals.levels
+	Customizer.using=false
+	
+	SceneGlobals.return_where=1
 
-func _input(event):
+func _input(_event):
 	selected_level=$background/arrow_buttons.selected_item
 	
 	if $background/arrow_buttons.change_detected==true:
@@ -35,6 +38,7 @@ func _input(event):
 
 		SceneGlobals.level=selected_level
 		if SceneGlobals.levels[selected_level]=="Custom":
+			#warning-ignore:return_value_discarded
 			get_tree().change_scene("res://menus/lvl_customizer.tscn")
 		else:
 			# warning-ignore:return_value_discarded

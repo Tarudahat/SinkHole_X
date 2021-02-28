@@ -3,6 +3,8 @@ extends Node2D
 onready var level =-1
 onready var difficulty =-1
 
+onready var return_where=0
+
 onready var added_score=0
 onready var player_score=0
 
@@ -11,7 +13,7 @@ onready var prices=[0,150000,300000,450000,600000,150000 ,1000000]
 
 #vvv these need to be saved vvv
 onready var total_score=0
-onready var hi_scores=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+onready var hi_scores=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]#last for custom -> doesn't get saved
 					#hi_scores[x][y]
 					#  x = what level | y = what difficulty of that level
 onready var unlocked=[true,false,false,false,false,false,false]

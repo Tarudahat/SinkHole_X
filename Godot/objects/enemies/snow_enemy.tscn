@@ -3,8 +3,6 @@
 [ext_resource path="res://objects/enemies/enemy.gd" type="Script" id=1]
 [ext_resource path="res://assets/enemies/snow_enemy.png" type="Texture" id=2]
 
-
-
 [sub_resource type="AtlasTexture" id=1]
 flags = 4
 atlas = ExtResource( 2 )

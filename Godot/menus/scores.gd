@@ -8,5 +8,9 @@ func _ready():
 
 func _input(_event):
 	if $ScrollContainer/front_panel/button_cancel.pressed==true or Input.is_action_just_pressed("ui_cancel"):
-		# warning-ignore:return_value_discarded
-		get_tree().change_scene("res://menus/title_menu.tscn")
+		if SceneGlobals.return_where==0:
+			# warning-ignore:return_value_discarded
+			get_tree().change_scene("res://menus/title_screen.tscn")
+		elif SceneGlobals.return_where==1:
+			# warning-ignore:return_value_discarded
+			get_tree().change_scene("res://menus/title_menu.tscn")
