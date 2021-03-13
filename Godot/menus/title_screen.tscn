@@ -93,8 +93,8 @@ scale = Vector2( 0.357, 0.313659 )
 texture = ExtResource( 5 )
 
 [node name="Control" parent="." instance=ExtResource( 6 )]
-margin_left = 8.0
-margin_top = 688.0
-margin_right = 72.0
-margin_bottom = 760.0
+margin_left = 16.0
+margin_top = 672.0
+margin_right = 96.0
+margin_bottom = 752.0
 stretch_mode = 6
