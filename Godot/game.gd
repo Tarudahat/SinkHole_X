@@ -357,14 +357,14 @@ func get_colider(map_):
 
 	var collision_points=[0,0,0,0]
 
-	if map_.get_cell((player.position.x-18)/64,(player.position.y-16)/64)>-1:
-		collision_points[0]=map_.get_cell((player.position.x-18)/64,(player.position.y-18)/64)
-	if map_.get_cell((player.position.x-18)/64,(player.position.y+18)/64)>-1:
-		collision_points[1]=map_.get_cell((player.position.x-18)/64,(player.position.y+18)/64)
-	if map_.get_cell((player.position.x+18)/64,(player.position.y-16)/64)>-1:
-		collision_points[2]=map_.get_cell((player.position.x+18)/64,(player.position.y-18)/64)
-	if map_.get_cell((player.position.x+18)/64,(player.position.y+18)/64)>-1:
-		collision_points[3]=map_.get_cell((player.position.x+18)/64,(player.position.y+18)/64)
+	if map_.get_cell((player.position.x-16)/64,(player.position.y-16)/64)>-1:
+		collision_points[0]=map_.get_cell((player.position.x-16)/64,(player.position.y-16)/64)
+	if map_.get_cell((player.position.x-16)/64,(player.position.y+16)/64)>-1:
+		collision_points[1]=map_.get_cell((player.position.x-16)/64,(player.position.y+16)/64)
+	if map_.get_cell((player.position.x+16)/64,(player.position.y-16)/64)>-1:
+		collision_points[2]=map_.get_cell((player.position.x+16)/64,(player.position.y-16)/64)
+	if map_.get_cell((player.position.x+16)/64,(player.position.y+16)/64)>-1:
+		collision_points[3]=map_.get_cell((player.position.x+16)/64,(player.position.y+16)/64)
 	
 	collision_points.sort()
 

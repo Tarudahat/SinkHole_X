@@ -35,37 +35,37 @@ flags = 4
 atlas = ExtResource( 3 )
 region = Rect2( 192, 0, 64, 64 )
 
-[sub_resource type="AtlasTexture" id=14]
+[sub_resource type="AtlasTexture" id=7]
 flags = 4
 atlas = ExtResource( 4 )
 region = Rect2( 0, 0, 64, 64 )
 
-[sub_resource type="AtlasTexture" id=15]
+[sub_resource type="AtlasTexture" id=8]
 flags = 4
 atlas = ExtResource( 4 )
 region = Rect2( 64, 0, 64, 64 )
 
-[sub_resource type="AtlasTexture" id=16]
+[sub_resource type="AtlasTexture" id=9]
 flags = 4
 atlas = ExtResource( 4 )
 region = Rect2( 128, 0, 64, 64 )
 
-[sub_resource type="AtlasTexture" id=17]
+[sub_resource type="AtlasTexture" id=10]
 flags = 4
 atlas = ExtResource( 4 )
 region = Rect2( 192, 0, 64, 64 )
 
-[sub_resource type="AtlasTexture" id=18]
+[sub_resource type="AtlasTexture" id=11]
 flags = 4
 atlas = ExtResource( 4 )
 region = Rect2( 256, 0, 64, 64 )
 
-[sub_resource type="AtlasTexture" id=19]
+[sub_resource type="AtlasTexture" id=12]
 flags = 4
 atlas = ExtResource( 4 )
 region = Rect2( 320, 0, 64, 64 )
 
-[sub_resource type="SpriteFrames" id=12]
+[sub_resource type="SpriteFrames" id=13]
 animations = [ {
 "frames": [ SubResource( 1 ), SubResource( 2 ) ],
 "loop": true,
@@ -77,14 +77,14 @@ animations = [ {
 "name": "shield",
 "speed": 7.0
 }, {
-"frames": [ SubResource( 14 ), SubResource( 15 ), SubResource( 16 ), SubResource( 17 ), SubResource( 18 ), SubResource( 19 ) ],
+"frames": [ SubResource( 7 ), SubResource( 8 ), SubResource( 9 ), SubResource( 10 ), SubResource( 11 ), SubResource( 12 ) ],
 "loop": true,
 "name": "SP",
 "speed": 9.0
 } ]
 
-[sub_resource type="RectangleShape2D" id=13]
-extents = Vector2( 25.9459, 30.3512 )
+[sub_resource type="RectangleShape2D" id=14]
+extents = Vector2( 24.75, 29.2501 )
 
 [node name="player" type="Node2D"]
 
@@ -94,9 +94,9 @@ collision/safe_margin = 0.001
 script = ExtResource( 2 )
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="player"]
-frames = SubResource( 12 )
+frames = SubResource( 13 )
 playing = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="player"]
 position = Vector2( 4.57764e-05, 5.34058e-05 )
-shape = SubResource( 13 )
+shape = SubResource( 14 )
