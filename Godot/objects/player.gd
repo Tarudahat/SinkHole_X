@@ -14,19 +14,19 @@ func _process(_delta):
 	player_x=0
 	player_y=0
 	if Input.is_action_pressed("in_right"):
-		player_x+=3*speed
+		player_x+=1
 		score+=10*speed
 		self.rotation_degrees=90
 	elif Input.is_action_pressed("in_left"):
-		player_x-=3*speed
+		player_x-=1
 		score+=10*speed
 		self.rotation_degrees=270
 	if Input.is_action_pressed("in_up"):
-		player_y-=3*speed
+		player_y-=1
 		score+=10*speed
 		self.rotation_degrees=0
 	elif Input.is_action_pressed("in_down"):
-		player_y+=3*speed
+		player_y+=1
 		score+=10*speed
 		self.rotation_degrees=180
 
@@ -39,4 +39,4 @@ func _process(_delta):
 	if self.position.y<0:
 		self.position.y=12*64
 
-	player_collision=move_and_collide(Vector2(player_x,player_y))
+	player_collision=move_and_collide(Vector2(player_x,player_y).normalized()*Vector2(3*speed,3*speed))

@@ -146,8 +146,8 @@ func spawn_enemies(redo_):
 			
 			if Customizer.using==true:
 				create_road(map_object_layer,-1)
-			if Customizer.level_base==3:
-				create_road(map_current,13)
+				if Customizer.level_base==3:
+					create_road(map_current,13)
 
 			for i in range(round(get_rnd_vector2D("").y/PI)+9):
 				if get_rnd_vector2D("").x>12 or i<5:
