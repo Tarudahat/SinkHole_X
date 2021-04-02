@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <fat.h>
+
+#include <string.h>
+#include <filesystem.h>
 
 #include <nf_lib.h>
 #include "structs.c"
@@ -36,7 +40,8 @@ s8 enemy_scroll;
 s16 big_enemy_scroll;
 u8 x_offset = 0;
 
-
+bool exit_menus={false};
+bool goto_title={false};
 bool reset_game = {false};
 bool touch_text_render = {true};
 
@@ -58,6 +63,7 @@ struct enemy_group shadow_enemies;
 struct enemy_group empty_group;
 
 //--NDS functions--
+
 void init(void)
 {
 	//set seed for rnd
@@ -65,6 +71,7 @@ void init(void)
 
 	swiWaitForVBlank(); //vsync
 	NF_SetRootFolder("NITROFS");
+
 	NF_Set2D(0, 0);
 	NF_Set2D(1, 0);
 
@@ -1134,6 +1141,13 @@ void enemies_layer(u8 layer){
 	}
 }
 
+void set_sprites_out(u8 screen){
+	for (u8 sprite = 0; sprite <= total_enemies; sprite++)
+	{
+		NF_MoveSprite(screen,sprite, 250,200);
+	}
+}
+
 void reset()
 {
 	//-reset-
@@ -1182,9 +1196,13 @@ void title_menu(){
 	swiWaitForVBlank();
 	NF_CreateTiledBg(0,menu_layer,"clear_screen");
 
+	set_sprites_out(0);
+
 	NF_CreateTiledBg(0,map_layer,"map0");
 	NF_CreateTiledBg(1,map_layer,"map0");
-	//add_object(0,map_layer,"grass");
+	clear_map(item_layer,0,2);
+	clear_map(map_layer,1,0);
+	add_object(0,map_layer,"grass");
 
 	render();
 
@@ -1249,18 +1267,15 @@ void main_menu(void)
 
 		if ((keysHeld() & KEY_A) || (touch_box(166, 158, 35, 25) == true))
 		{
+			goto_title=false;
 			selecting = false;
 		}
 		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 65, 26) == true))
 		{
-			reset();
-			swiWaitForVBlank();
-			NF_CreateTiledBg(0, menu_layer, "main_menu0");
-			NF_CreateTiledBg(0,map_layer,"map0");
-			NF_CreateTiledBg(1,map_layer,"map0");
-			title_menu();
+			goto_title=true;
 			input_delay.delay = 0;
 			difficulty = 3;
+			selecting=false;
 		}
 		swiWaitForVBlank();
 		render();
@@ -1316,16 +1331,16 @@ void difficulty_menu()
 
 		if ((keysHeld() & KEY_A) || (touch_box(166, 158, 35, 25) == true))
 		{
+			exit_menus=true;
 			selecting = false;
 		}
 		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 65, 26) == true))
 		{
 			reset();
 			swiWaitForVBlank();
-			NF_CreateTiledBg(0, menu_layer, "main_menu0");
-			main_menu();
 			input_delay.delay = 0;
 			difficulty = 3;
+			selecting=false;
 		}
 
 		NF_ScrollBg(0, menu_layer, 0, 192 * (difficulty - 1));
@@ -1590,7 +1605,7 @@ void game_over()
 	NF_CreateTiledBg(1, menu_layer, "game_touch");
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	init();
 	title_menu();
@@ -1601,9 +1616,20 @@ int main(void)
 		swiWaitForVBlank();
 		scanKeys();
 
+		while(exit_menus==false){
 		main_menu();
 
+			while(goto_title==true){
+
+				title_menu();
+
+				main_menu();
+			}
+			goto_title=false;
+
 		difficulty_menu();
+		}
+		exit_menus=false;
 
 		clear_map(menu_layer, 0, 1);
 
