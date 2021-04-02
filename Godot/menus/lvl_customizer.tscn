@@ -4,7 +4,7 @@
 [ext_resource path="res://assets/thumbnails/thumbnail_0.png" type="Texture" id=2]
 [ext_resource path="res://assets/GUI/empty_.png" type="Texture" id=3]
 [ext_resource path="res://assets/font.tres" type="DynamicFont" id=4]
-[ext_resource path="res://assets/GUI/long_tab.png" type="Texture" id=5]
+[ext_resource path="res://assets/GUI/less_long_tab.png" type="Texture" id=5]
 [ext_resource path="res://assets/EightBitDragon-anqx.ttf" type="DynamicFontData" id=6]
 [ext_resource path="res://menus/TextEdit_limit.gd" type="Script" id=7]
 [ext_resource path="res://menus/ScrollContainer.gd" type="Script" id=8]
@@ -39,8 +39,8 @@ __meta__ = {
 
 [node name="ScrollContainer" type="ScrollContainer" parent="TextureRect"]
 margin_top = -4.0
-margin_right = 1296.0
-margin_bottom = 764.0
+margin_right = 1292.0
+margin_bottom = 724.0
 rect_min_size = Vector2( 1, 1 )
 rect_clip_content = false
 scroll_horizontal_enabled = false
@@ -51,7 +51,7 @@ __meta__ = {
 
 [node name="TextureRect" type="TextureRect" parent="TextureRect/ScrollContainer"]
 margin_right = 1280.0
-margin_bottom = 3982.0
+margin_bottom = 3200.0
 texture = ExtResource( 5 )
 stretch_mode = 2
 __meta__ = {
@@ -70,9 +70,9 @@ __meta__ = {
 }
 
 [node name="lvl_code" type="Label" parent="TextureRect/ScrollContainer/TextureRect"]
-margin_left = 472.0
+margin_left = 1400.0
 margin_top = 276.0
-margin_right = 797.0
+margin_right = 1725.0
 margin_bottom = 432.0
 custom_fonts/font = ExtResource( 4 )
 text = "Level Code:
@@ -99,9 +99,9 @@ MAX_CHAR = 6
 
 [node name="arrow_buttons" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 1 )]
 margin_left = 184.0
-margin_top = 420.0
+margin_top = 204.0
 margin_right = 224.0
-margin_bottom = 460.0
+margin_bottom = 244.0
 rect_scale = Vector2( 0.7, 0.7 )
 
 [node name="lvl_name" type="Label" parent="TextureRect/ScrollContainer/TextureRect/arrow_buttons"]
@@ -148,9 +148,9 @@ __meta__ = {
 
 [node name="items" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 10 )]
 margin_left = 256.0
-margin_top = 900.0
+margin_top = 668.0
 margin_right = 512.0
-margin_bottom = 972.0
+margin_bottom = 740.0
 
 [node name="speed x2" parent="TextureRect/ScrollContainer/TextureRect/items" instance=ExtResource( 10 )]
 margin_left = 48.0
@@ -196,9 +196,9 @@ text = "Super Car:"
 
 [node name="enemies" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 10 )]
 margin_left = 256.0
-margin_top = 1604.0
+margin_top = 1292.0
 margin_right = 581.0
-margin_bottom = 1676.0
+margin_bottom = 1364.0
 text = "Enemies:"
 
 [node name="roller" parent="TextureRect/ScrollContainer/TextureRect/enemies" instance=ExtResource( 10 )]
@@ -229,17 +229,126 @@ margin_right = 393.0
 margin_bottom = 360.0
 text = "Phantom:"
 
+[node name="sound_fx" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 10 )]
+margin_left = 256.0
+margin_top = 1780.0
+margin_right = 786.0
+margin_bottom = 1852.0
+text = "Sound Effects:"
+
+[node name="music" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 10 )]
+margin_left = 256.0
+margin_top = 1964.0
+margin_right = 512.0
+margin_bottom = 2036.0
+text = "Music:"
+toggle_type = 1
+
+[node name="BGM1" parent="TextureRect/ScrollContainer/TextureRect/music" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 72.0
+margin_right = 403.0
+margin_bottom = 144.0
+text = "Plains Theme:"
+toggle_type = 1
+
+[node name="BGM2" parent="TextureRect/ScrollContainer/TextureRect/music" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 144.0
+margin_right = 398.0
+margin_bottom = 216.0
+pressed = false
+text = "Highway Theme:"
+toggle_type = 1
+
+[node name="BGM3" parent="TextureRect/ScrollContainer/TextureRect/music" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 216.0
+margin_right = 384.0
+margin_bottom = 288.0
+pressed = false
+text = "Snow field Theme:"
+toggle_type = 1
+
+[node name="BGM4" parent="TextureRect/ScrollContainer/TextureRect/music" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 288.0
+margin_right = 393.0
+margin_bottom = 360.0
+pressed = false
+text = "Volcano Theme:"
+toggle_type = 1
+
+[node name="BGM5" parent="TextureRect/ScrollContainer/TextureRect/music" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 360.0
+margin_right = 393.0
+margin_bottom = 432.0
+pressed = false
+text = "Phantom Field Theme:"
+toggle_type = 1
+
+[node name="BGM6" parent="TextureRect/ScrollContainer/TextureRect/music" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 432.0
+margin_right = 483.0
+margin_bottom = 504.0
+pressed = false
+text = "Menu Theme:"
+toggle_type = 1
+
+[node name="difficulty" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 10 )]
+margin_left = 256.0
+margin_top = 2572.0
+margin_right = 1512.0
+margin_bottom = 2644.0
+text = "Difficulty:"
+toggle_type = 1
+
+[node name="ez" parent="TextureRect/ScrollContainer/TextureRect/difficulty" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 72.0
+margin_right = 298.0
+margin_bottom = 144.0
+text = "Sloth:"
+toggle_type = 1
+
+[node name="normal" parent="TextureRect/ScrollContainer/TextureRect/difficulty" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 144.0
+margin_right = 338.0
+margin_bottom = 216.0
+text = "normal:"
+toggle_type = 1
+
+[node name="hard" parent="TextureRect/ScrollContainer/TextureRect/difficulty" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 216.0
+margin_right = 283.0
+margin_bottom = 288.0
+text = "Hard:"
+toggle_type = 1
+
+[node name="impossible" parent="TextureRect/ScrollContainer/TextureRect/difficulty" instance=ExtResource( 10 )]
+margin_left = 48.0
+margin_top = 288.0
+margin_right = 438.0
+margin_bottom = 360.0
+pressed = false
+text = "impossible:"
+toggle_type = 1
+
 [node name="button_cancel" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 11 )]
 margin_left = 200.0
-margin_top = 3740.0
+margin_top = 3028.0
 margin_right = 352.0
-margin_bottom = 3868.0
+margin_bottom = 3156.0
 
 [node name="button_ok" type="Button" parent="TextureRect/ScrollContainer/TextureRect"]
-margin_left = 863.0
-margin_top = 3757.75
-margin_right = 999.0
-margin_bottom = 3849.75
+margin_left = 880.0
+margin_top = 3044.0
+margin_right = 1016.0
+margin_bottom = 3136.0
 mouse_default_cursor_shape = 2
 custom_fonts/font = ExtResource( 4 )
 text = "Ok"

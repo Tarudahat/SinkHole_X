@@ -306,6 +306,7 @@ func update_snow_enemy(enemy_):
 		enemy_.get_child(0).frame=1
 
 func update_fire_target(enemy_):
+	enemy_.modulate.a=1-0.003*(enemy_.position.y-enemy_.linked_node.position.y)
 	if enemy_.can_spawn==true:
 		var rnd_position=get_rnd_vector2D("snow man")
 		enemy_.position=Vector2(rnd_position.x*64+32,rnd_position.y*64+32)

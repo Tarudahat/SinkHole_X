@@ -1184,7 +1184,7 @@ void title_menu(){
 
 	NF_CreateTiledBg(0,map_layer,"map0");
 	NF_CreateTiledBg(1,map_layer,"map0");
-	add_object(0,map_layer,"grass");
+	//add_object(0,map_layer,"grass");
 
 	render();
 
@@ -1256,6 +1256,8 @@ void main_menu(void)
 			reset();
 			swiWaitForVBlank();
 			NF_CreateTiledBg(0, menu_layer, "main_menu0");
+			NF_CreateTiledBg(0,map_layer,"map0");
+			NF_CreateTiledBg(1,map_layer,"map0");
 			title_menu();
 			input_delay.delay = 0;
 			difficulty = 3;

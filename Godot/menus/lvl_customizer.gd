@@ -28,5 +28,21 @@ func _process(_delta):
 			Customizer.using_enemies[i]=option
 			i+=1
 		
+		SceneGlobals.difficulty=2
+		i=0
+		for option in $TextureRect/ScrollContainer/TextureRect/difficulty.on_off_list:
+			if option==true and i>0:
+				SceneGlobals.difficulty=i
+			i+=1
+		
+		Customizer.using_music=0
+		i=0
+		for option in $TextureRect/ScrollContainer/TextureRect/music.on_off_list:
+			if option==true and i>0:
+				Customizer.using_music=i
+			i+=1
+		
+		Customizer.using_sound_fx=$TextureRect/ScrollContainer/TextureRect/sound_fx.on_off_list[0]
+		
 		#warning-ignore:return_value_discarded
-		get_tree().change_scene("res://menus/diff_menu.tscn")
+		get_tree().change_scene("res://game.tscn")
