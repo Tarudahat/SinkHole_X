@@ -25,7 +25,8 @@ struct Timer invert_item;
 struct Timer items_timer = {7};
 struct Timer roller;
 
-struct SaveStruct save_data;
+FILE *save_file;
+struct SaveStruct SaveData;
 
 touchPosition touchXY;
 
@@ -184,6 +185,27 @@ void init(void)
 
 
 	NF_CreateTiledBg(0, map_layer, "map0");
+
+}
+
+void save()
+{
+	fatInitDefault();
+
+	SaveData.hi_scores[3]=5;
+	SaveData.total_score=69420;
+	save_file = fopen("./SinkHole.sav","wb");
+	fwrite(&SaveData,1,sizeof(SaveData),save_file);
+	fclose(save_file);	
+}
+
+void load()
+{
+	fatInitDefault();
+
+	save_file = fopen("./SinkHole.sav","rb");
+	fread(&SaveData,1,sizeof(SaveData),save_file);
+	fclose(save_file);
 
 }
 
@@ -1608,6 +1630,7 @@ void game_over()
 int main(int argc, char **argv)
 {
 	init();
+	load();
 	title_menu();
 	while (1)
 	{
