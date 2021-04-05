@@ -33,7 +33,7 @@ touchPosition touchXY;
 u8 frame_in_sec = {0};
 u32 current_msec; //approximation of what msec, from start of the game
 u32 current_sec;  //sec since the start of game, using console time lags to much
-s8 level = {0};	  //0=plains (OG) 1=Highway 2=Snow field
+s8 level = {0};	  //0=plains (OG) 1=Highway 2=Snow field 3=Volcano 4=Phantom Field
 u8 difficulty;	  //1=easy 2=normal 3=hard 4=impossible
 u8 scroll_x;
 u8 prev_scroll_x;
@@ -50,6 +50,7 @@ bool enemies_used = {false};
 bool car_enemies_used = {false};
 bool snow_enemies_used = {false};
 bool fire_enemies_used = {false};
+bool phantom_enemies_used = {false};
 
 bool enemies_deleted = {false};
 bool spawn_offset = {false};
@@ -151,6 +152,7 @@ void init(void)
 	NF_LoadTiledBg("BG/map1", "map1", 512, 256);
 	NF_LoadTiledBg("BG/map2", "map2", 512, 256);
 	NF_LoadTiledBg("BG/map3", "map3", 512, 256);
+	NF_LoadTiledBg("BG/map4", "map4", 512, 256);
 
 	//menus
 	//top screen
@@ -158,6 +160,8 @@ void init(void)
 	NF_LoadTiledBg("menu/main_menu1", "main_menu1", 256, 256);
 	NF_LoadTiledBg("menu/main_menu2", "main_menu2", 256, 256);
 	NF_LoadTiledBg("menu/main_menu3", "main_menu3", 256, 256);
+	NF_LoadTiledBg("menu/main_menu4", "main_menu4", 256, 256);
+	NF_LoadTiledBg("menu/main_menu5", "main_menu5", 256, 256);
 	NF_LoadTiledBg("menu/clear_screen", "clear_screen", 256, 256);
 	NF_LoadTiledBg("menu/game_over", "game_over", 256, 256);
 	NF_LoadTiledBg("menu/pause_menu_top", "pause_menu_top", 256, 256);
@@ -787,16 +791,6 @@ void update_fire_enemy(u8 enemy_)
 	NF_MoveSprite(0, fire_enemies.enemy_id[enemy_], fire_enemies.enemy_x[enemy_], fire_enemies.enemy_y[enemy_]);
 }
 
-bool touch_box(s32 x, s32 y, u16 sizex, u16 sizey)
-{
-	touchRead(&touchXY);
-	if (touchXY.px >= x && touchXY.px <= x + sizex && touchXY.py >= y && touchXY.py <= y + sizey)
-	{
-		return true;
-	}
-	return false;
-}
-
 bool sprites_collide(s32 x1, s32 y1, s32 x2, s32 y2, s16 size1, s16 size2, s16 offsetx1, s16 offsety1, s16 offsetx2, s16 offsety2)
 {
 	if ((((x1 + offsetx1 >= x2 + offsetx2) && (x1 + offsetx1 <= x2 + size2 + offsetx2)) || ((x1 + size1 + offsetx1 >= x2 + offsetx2) && (x1 + size1 + offsetx1 <= x2 + size2 + offsetx2))) && (((y1 + offsety1 >= y2 + offsety2) && (y1 + offsety1 <= y2 + size2 + offsety2)) || ((y1 + size1 + offsety1 >= y2 + offsety2) && (y1 + size1 + offsety1 <= y2 + size2 + offsety2))))
@@ -811,7 +805,7 @@ void get_enemy_collision()
 {
 	//update enemies here
 	update_enemy_scroll();
-	if (car_enemies_used == true)
+	if ((car_enemies_used == true)||(phantom_enemies_used==true))
 	{
 		for (u8 enemy_index = 1; enemy_index <= car_enemies.group_members; enemy_index++) //start from 1 bc 0 is for player
 		{
@@ -959,6 +953,9 @@ void spawn_enemies()
 			enemy++;
 		}
 	}
+	/*if(phantom_enemies_used==true){
+		spawn_enemy(3,0,5,5);
+	}*/
 }
 
 void clear_enemies()
@@ -1005,7 +1002,7 @@ void add_object(u8 screen, u8 layer_, char *str_)
 	if (strcmp(str_, "item") == 0)
 	{
 		u8 rnd_num = rand_(9);
-		if (rnd_num >= 5) //don't forget to make the this "==6" when adding last item
+		if (rnd_num == 6) //don't forget to make the this "==6" when adding last item
 		{
 			rnd_num = 4;
 		}
@@ -1045,6 +1042,14 @@ void add_object(u8 screen, u8 layer_, char *str_)
 		{
 			make_16x16_tile(screen,6, layer_, even(rand_(80)), even(rand_(48)), 1);
 		}
+	}
+	else if (strcmp(str_, "grave_stones") == 0)
+	{
+		for (u8 i = 0; i < (rand_(5) + 12); i++)
+		{
+			make_16x16_tile(screen,73, layer_, even(rand_(80)), even(rand_(48)), 1);
+		}
+
 	}
 	else if (strcmp(str_, "item") == 0)
 	{
@@ -1096,6 +1101,12 @@ void gen_map(u8 map_index)
 
 		array2river(item_layer, rnd_river, rivers);
 	}
+	else if (map_index == 4)
+	{
+		//spoopy grass
+		add_object(0,map_layer, "rocks");
+		add_object(0,item_layer, "grave_stones");
+	}
 }
 
 void update_holes()
@@ -1125,6 +1136,7 @@ void reset_enemies()
 	car_enemies_used = false;
 	snow_enemies_used = false;
 	fire_enemies_used = false;
+	phantom_enemies_used=false;
 	total_enemies = 0;
 	//clear enemy data
 	car_enemies = empty_group;
@@ -1151,6 +1163,10 @@ void reset_enemies()
 		fire_enemies_used = true;
 		//|-> refers to targets & fire balls
 		enemies_used = true;
+		break;
+	case 4:
+		phantom_enemies_used=true;
+		enemies_used=true;
 		break;
 	}
 	NF_ResetSpriteBuffers();
@@ -1201,7 +1217,11 @@ void reset()
 	case 3:
 		clear_map(map_layer, 1, 2);
 		break;
-	}
+	case 4:
+		clear_map(map_layer, 1, 2);
+		break;
+	}	
+	
 	clear_map(item_layer, 0, 0);
 
 	gen_map(level);
@@ -1210,171 +1230,19 @@ void reset()
 }
 
 void difficulty_menu();
-bool cursor_menu();
 
-void title_menu(){
-	//-title menu-
-	//fancy grass stuff
-	swiWaitForVBlank();
-	NF_CreateTiledBg(0,menu_layer,"clear_screen");
-
-	set_sprites_out(0);
-
-	NF_CreateTiledBg(0,map_layer,"map0");
-	NF_CreateTiledBg(1,map_layer,"map0");
-	clear_map(item_layer,0,2);
-	clear_map(map_layer,1,0);
-	add_object(0,map_layer,"grass");
-
-	render();
-
-	NF_CreateTiledBg(1,map_layer,"map0");
-	NF_ScrollBg(1,map_layer,64,0);
-	render();
-
-	bool menu_choice={cursor_menu("title","title_bottom")};
-	
-	if(menu_choice==true)
-	{
-		NF_CreateTiledBg(0,menu_layer,"power_msg");
-		render();
-		NF_CreateTiledBg(1,menu_layer,"power_msg");
-		render();
-		u8 i=0;
-		while(i==0){};//loop until shut down
-	}
-
-	//------------
-}
-
-void main_menu(void)
+bool touch_box(s32 x, s32 y, u16 sizex, u16 sizey)
 {
-	level = 0;
-	player.player_state = 1;
-	struct Timer input_delay = {current_msec + 100};
-	bool selecting = {true};
-	char map_name[11];
-	//make temp maps
-	NF_CreateTiledBg(0, map_layer, "main_menu0");
-	NF_CreateTiledBg(0, menu_layer, "main_menu0");
-	NF_CreateTiledBg(1, menu_layer, "main_menu_touch");
-	while (selecting)
+	touchRead(&touchXY);
+	if (touchXY.px >= x && touchXY.px <= x + sizex && touchXY.py >= y && touchXY.py <= y + sizey)
 	{
-		scanKeys(); //get button input
-
-		if ((keysHeld() > 0) & (input_delay.delay < current_msec))
-		{
-			if ((keysHeld() & KEY_LEFT) || (touch_box(17, 42, 85, 85) == true))
-			{
-				level--;
-			}
-			else if ((keysHeld() & KEY_RIGHT) || (touch_box(156, 42, 85, 85) == true))
-			{
-				level++;
-			}
-			if (level > 3)
-			{
-				level = 0;
-			}
-			else if (level < 0)
-			{
-				level = 3;
-			}
-
-			sprintf(map_name, "main_menu%i", level);
-			NF_CreateTiledBg(0, menu_layer, map_name);
-
-			input_delay.delay = current_msec + 104;
-		}
-
-		if ((keysHeld() & KEY_A) || (touch_box(166, 158, 35, 25) == true))
-		{
-			goto_title=false;
-			selecting = false;
-		}
-		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 65, 26) == true))
-		{
-			goto_title=true;
-			input_delay.delay = 0;
-			difficulty = 3;
-			selecting=false;
-		}
-		swiWaitForVBlank();
-		render();
-		swiWaitForVBlank();
-		update_current_time();
+		return true;
 	}
-
-	NF_CreateTiledBg(0, map_layer, "map0");
-	clear_map(menu_layer, 0, 1);
-	NF_CreateTiledBg(0, menu_layer, "diff_menu");
-	swiWaitForVBlank();
+	return false;
 }
 
-void difficulty_menu()
-{
-	difficulty = 3;
-	player.player_state = 1;
-	struct Timer input_delay = {100};
-	bool selecting = true;
-	//make a temp maps
-	NF_CreateTiledBg(0, map_layer, "map0");
-	NF_CreateTiledBg(0, menu_layer, "diff_menu");
-	NF_ScrollBg(0, menu_layer, 0, 192 * (difficulty - 1));
-	swiWaitForVBlank();
-	render();
 
-	while (selecting)
-	{
-		scanKeys(); //get  button input
-
-		if ((keysHeld() > 0) & (input_delay.delay < current_msec))
-		{
-			if ((keysHeld() & KEY_LEFT) || (touch_box(17, 42, 85, 85) == true))
-			{
-				difficulty--;
-			}
-			else if ((keysHeld() & KEY_RIGHT) || (touch_box(156, 42, 85, 85) == true))
-			{
-				difficulty++;
-			}
-			if (difficulty > 4)
-			{
-				difficulty = 1;
-			}
-			if (difficulty < 1)
-			{
-				difficulty = 4;
-			}
-			swiWaitForVBlank();
-			render();
-			input_delay.delay = current_msec + 104;
-		}
-
-		if ((keysHeld() & KEY_A) || (touch_box(166, 158, 35, 25) == true))
-		{
-			exit_menus=true;
-			selecting = false;
-		}
-		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 65, 26) == true))
-		{
-			reset();
-			swiWaitForVBlank();
-			input_delay.delay = 0;
-			difficulty = 3;
-			selecting=false;
-		}
-
-		NF_ScrollBg(0, menu_layer, 0, 192 * (difficulty - 1));
-		swiWaitForVBlank();
-		render();
-		update_current_time();
-	}
-	swiWaitForVBlank();
-	NF_CreateTiledBg(1, menu_layer, "game_touch");
-}
-
-bool cursor_menu(char* menu_img_top ,char* menu_img_bottom)
+bool cursor_menu(char* menu_img_top ,char* menu_img_bottom, bool pause_mode)
 {
 	s8 selected = {0};
 	s8 prev_selected = selected;
@@ -1479,12 +1347,181 @@ bool cursor_menu(char* menu_img_top ,char* menu_img_bottom)
 	NF_CreateTiledBg(1,menu_layer,"game_touch");
 
 	touch_text_render=true;
-
-	current_msec = backup_msec;
-	current_sec = backup_sec;
-	frame_in_sec = backup_frame_in_sec;
+	
+	if (pause_mode==true){
+		current_msec = backup_msec;
+		current_sec = backup_sec;
+		frame_in_sec = backup_frame_in_sec;
+	}
 	
 	return selected;
+}
+
+
+void title_menu(){
+	//-title menu-
+	//fancy grass stuff
+	swiWaitForVBlank();
+	NF_CreateTiledBg(0,menu_layer,"clear_screen");
+
+	set_sprites_out(0);
+
+	NF_CreateTiledBg(0,map_layer,"map0");
+	NF_CreateTiledBg(1,map_layer,"map0");
+	clear_map(item_layer,0,2);
+	clear_map(map_layer,1,0);
+	add_object(0,map_layer,"grass");
+
+	render();
+
+	NF_CreateTiledBg(1,map_layer,"map0");
+	NF_ScrollBg(1,map_layer,64,0);
+	render();
+
+	bool menu_choice={cursor_menu("title","title_bottom",false)};
+	
+	if(menu_choice==true)
+	{
+		NF_CreateTiledBg(0,menu_layer,"power_msg");
+		render();
+		NF_CreateTiledBg(1,menu_layer,"power_msg");
+		render();
+		u8 i=0;
+		while(i==0){};//loop until shut down
+	}
+
+	//------------
+}
+
+void main_menu(void)
+{
+	level = 0;
+	player.player_state = 1;
+	struct Timer input_delay = {current_msec + 100};
+	bool selecting = {true};
+	char map_name[11];
+	//make temp maps
+	NF_CreateTiledBg(0, map_layer, "main_menu0");
+	NF_CreateTiledBg(0, menu_layer, "main_menu0");
+	NF_CreateTiledBg(1, menu_layer, "main_menu_touch");
+	while (selecting)
+	{
+		scanKeys(); //get button input
+
+		if ((keysHeld() > 0) & (input_delay.delay < current_msec))
+		{
+			if ((keysHeld() & KEY_LEFT) || (touch_box(17, 42, 85, 85) == true))
+			{
+				level--;
+			}
+			else if ((keysHeld() & KEY_RIGHT) || (touch_box(156, 42, 85, 85) == true))
+			{
+				level++;
+			}
+			if (level > 5)
+			{
+				level = 0;
+			}
+			else if (level < 0)
+			{
+				level = 5;
+			}
+
+			sprintf(map_name, "main_menu%i", level);
+			NF_CreateTiledBg(0, menu_layer, map_name);
+
+			input_delay.delay = current_msec + 104;
+		}
+
+		if ((keysHeld() & KEY_A) || (touch_box(166, 158, 35, 25) == true))
+		{
+			if (level==5)
+			{
+				level=rand_(4);
+			}
+			goto_title=false;
+			selecting = false;
+		}
+		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 65, 26) == true))
+		{
+			goto_title=true;
+			input_delay.delay = 0;
+			difficulty = 3;
+			selecting=false;
+		}
+		swiWaitForVBlank();
+		render();
+		swiWaitForVBlank();
+		update_current_time();
+	}
+
+	NF_CreateTiledBg(0, map_layer, "map0");
+	clear_map(menu_layer, 0, 1);
+	NF_CreateTiledBg(0, menu_layer, "diff_menu");
+	swiWaitForVBlank();
+}
+
+void difficulty_menu()
+{
+	difficulty = 3;
+	player.player_state = 1;
+	struct Timer input_delay = {current_msec+100};
+	bool selecting = true;
+	//make a temp maps
+	NF_CreateTiledBg(0, map_layer, "map0");
+	NF_CreateTiledBg(0, menu_layer, "diff_menu");
+	NF_ScrollBg(0, menu_layer, 0, 192 * (difficulty - 1));
+	swiWaitForVBlank();
+	render();
+
+	while (selecting)
+	{
+		scanKeys(); //get  button input
+
+		if ((keysHeld() > 0) & (input_delay.delay < current_msec))
+		{
+			if ((keysHeld() & KEY_LEFT) || (touch_box(17, 42, 85, 85) == true))
+			{
+				difficulty--;
+			}
+			else if ((keysHeld() & KEY_RIGHT) || (touch_box(156, 42, 85, 85) == true))
+			{
+				difficulty++;
+			}
+			if (difficulty > 4)
+			{
+				difficulty = 1;
+			}
+			if (difficulty < 1)
+			{
+				difficulty = 4;
+			}
+			swiWaitForVBlank();
+			render();
+			input_delay.delay = current_msec + 104;
+		}
+
+		if ((keysHeld() & KEY_A) || (touch_box(166, 158, 35, 25) == true))
+		{
+			exit_menus=true;
+			selecting = false;
+		}
+		else if ((keysHeld() & KEY_B) || (touch_box(26, 158, 65, 26) == true))
+		{
+			reset();
+			swiWaitForVBlank();
+			input_delay.delay = 0;
+			difficulty = 3;
+			selecting=false;
+		}
+
+		NF_ScrollBg(0, menu_layer, 0, 192 * (difficulty - 1));
+		swiWaitForVBlank();
+		render();
+		update_current_time();
+	}
+	swiWaitForVBlank();
+	NF_CreateTiledBg(1, menu_layer, "game_touch");
 }
 
 void spawn_hole()
@@ -1547,7 +1584,7 @@ void do_physics()
 				}
 			}
 		}
-		if (get_player_tile(item_layer) >= 49 && get_player_tile(item_layer) < 75)
+		if (get_player_tile(item_layer) >= 49 && get_player_tile(item_layer) <= 77)
 		{
 			player.player_state = 1;
 		}
@@ -1673,7 +1710,7 @@ int main(int argc, char **argv)
 			if ((button == KEY_START) || (button == KEY_LID) || (touch_box(205, 163, 30, 20) && current_msec >= 520))
 			{
 				enemies_layer(item_layer);
-				if (cursor_menu("pause_menu_top","pause_menu") == true)
+				if (cursor_menu("pause_menu_top","pause_menu",true) == true)
 				{
 					reset_game = true;
 					
