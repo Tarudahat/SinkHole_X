@@ -196,8 +196,6 @@ void save()
 {
 	fatInitDefault();
 
-	SaveData.hi_scores[3]=5;
-	SaveData.total_score=69420;
 	save_file = fopen("./SinkHole.sav","wb");
 	fwrite(&SaveData,1,sizeof(SaveData),save_file);
 	fclose(save_file);	
@@ -1639,15 +1637,25 @@ void game_over()
 	NF_CreateTiledBg(0, menu_layer, "game_over");
 	NF_CreateTiledBg(1, menu_layer, "game_over_touch");
 	render();
+
 	//display score
 	NF_ClearTextLayer16(0, text_layer);
-	NF_WriteText16(0, text_layer, 10, 6, player.score_str);
-	NF_UpdateTextLayers();
 
-	while ((keysHeld() != (KEY_A || KEY_START)) || (touch_box(0, 0, 256, 192) == false))
+	sprintf(player.score_str, "Score:%lli", player.score);
+	NF_WriteText16(1, text_layer, 5, 5, player.score_str);
+
+	while ((keysHeld() != (KEY_A || KEY_START)))
 	{
+
 		scanKeys(); //get input
+
+		//save button
+		if (touch_box(205, 159, 232, 186) ==true)
+		{
+			save();
+		}
 	}
+
 	clear_map(menu_layer, 0, 1);
 	NF_ClearTextLayer16(0, text_layer);
 	NF_UpdateTextLayers();
