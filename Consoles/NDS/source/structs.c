@@ -2,13 +2,13 @@
 #include <stdio.h>
 
 struct SaveStruct{
-	s64 total_score;
-	s64 hi_scores[5][4];
+	u32 total_score;
+	u32 hi_scores[20];
 };
 
 struct Player
 {
-    s64 score;
+    u32 score;
     char *score_str;
     u32 anim_delay;
     u8 current_frame;

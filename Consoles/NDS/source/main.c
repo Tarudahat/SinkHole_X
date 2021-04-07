@@ -194,7 +194,11 @@ void init(void)
 
 void save()
 {
-	fatInitDefault();
+
+	for (size_t i = 0; i < 20; i++)
+	{
+		SaveData.hi_scores[i]=i;
+	}
 
 	save_file = fopen("./SinkHole.sav","wb");
 	fwrite(&SaveData,1,sizeof(SaveData),save_file);
@@ -203,8 +207,6 @@ void save()
 
 void load()
 {
-	fatInitDefault();
-
 	save_file = fopen("./SinkHole.sav","rb");
 	fread(&SaveData,1,sizeof(SaveData),save_file);
 	fclose(save_file);
@@ -1637,23 +1639,14 @@ void game_over()
 	NF_CreateTiledBg(0, menu_layer, "game_over");
 	NF_CreateTiledBg(1, menu_layer, "game_over_touch");
 	render();
-
 	//display score
 	NF_ClearTextLayer16(0, text_layer);
+	NF_WriteText16(0, text_layer, 5, 5, player.score_str);
+	NF_UpdateTextLayers();
 
-	sprintf(player.score_str, "Score:%lli", player.score);
-	NF_WriteText16(1, text_layer, 5, 5, player.score_str);
-
-	while ((keysHeld() != (KEY_A || KEY_START)))
+	while ((keysHeld() != (KEY_A || KEY_START)) || (touch_box(0, 0, 256, 192) == false))
 	{
-
 		scanKeys(); //get input
-
-		//save button
-		if (touch_box(205, 159, 232, 186) ==true)
-		{
-			save();
-		}
 	}
 
 	clear_map(menu_layer, 0, 1);
