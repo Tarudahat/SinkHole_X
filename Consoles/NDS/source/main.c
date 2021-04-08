@@ -61,6 +61,7 @@ struct enemy_group snow_enemies;
 struct enemy_group ball_enemies;
 struct enemy_group fire_enemies;
 struct enemy_group shadow_enemies;
+struct enemy_group phantom_enemies;
 
 struct enemy_group empty_group;
 
@@ -89,58 +90,59 @@ void init(void)
 	NF_InitTextSys(1);
 
 	//load assets
+
 	//Sprites							|->the img
 	//					name     , ram-slot  , w, h
 	//top-screen
-	NF_LoadSpriteGfx("sprites/car", 0, 16, 16);
-	NF_LoadSpritePal("sprites/car", 0);
-
+	
 	NF_LoadSpriteGfx("sprites/car_enemy", 1, 16, 16);
+	NF_VramSpriteGfx(0, 1, 1, false);
 	NF_LoadSpritePal("sprites/car_enemy", 1);
+	NF_VramSpritePal(0, 1, 1);
+
+	NF_LoadSpriteGfx("sprites/car", 0, 16, 16);
+	NF_VramSpriteGfx(0, 0, 0, false);
+	NF_LoadSpritePal("sprites/car", 0);
+	NF_VramSpritePal(0, 0, 0);
 
 	NF_LoadSpriteGfx("sprites/snow_man", 2, 16, 32);
+	NF_VramSpriteGfx(0, 2, 2, false);
 	NF_LoadSpritePal("sprites/snow_man", 2);
-
+	NF_VramSpritePal(0, 2, 2);
+	
 	NF_LoadSpriteGfx("sprites/ball", 3, 8, 8);
+	NF_VramSpriteGfx(0, 3, 3, false);
 	NF_LoadSpritePal("sprites/ball", 3);
+	NF_VramSpritePal(0, 3, 3);
 
 	NF_LoadSpriteGfx("sprites/car_roller", 4, 16, 16);
+	NF_VramSpriteGfx(0, 4, 4, false);
 	NF_LoadSpritePal("sprites/car_roller", 4);
-
+	NF_VramSpritePal(0, 4, 4);
+		
 	NF_LoadSpriteGfx("sprites/fire_ball", 6, 16, 16);
+	NF_VramSpriteGfx(0, 6, 6, false);
 	NF_LoadSpritePal("sprites/fire_ball", 6);
-
+	NF_VramSpritePal(0, 6, 6);
+		
 	NF_LoadSpriteGfx("sprites/shadow", 7, 16, 16);
+	NF_VramSpriteGfx(0, 7, 7, false);
 	NF_LoadSpritePal("sprites/shadow", 7);
+	NF_VramSpritePal(0, 7, 7);
+		
+	NF_LoadSpriteGfx("sprites/phantom", 8, 16, 16);
+	NF_VramSpriteGfx(0, 8, 8, false);
+	NF_LoadSpritePal("sprites/phantom", 8);
+	NF_VramSpritePal(0, 8, 8);
 
 	//touch screen
 	NF_LoadSpriteGfx("sprites/cursor", 5, 64, 64); //144 32
 	NF_LoadSpritePal("sprites/cursor", 5);
 
 	//in which vram? screen,vram,ram,animframes?
-	NF_VramSpriteGfx(0, 0, 0, false);
-	NF_VramSpritePal(0, 0, 0);
-
 	//                     |-> img it will be using		|-> 0-128 slots to contain sprite
 	//            screen, ram-slot,                  Vram-slot,
 	//top-screen
-	NF_VramSpriteGfx(0, 1, 1, false);
-	NF_VramSpritePal(0, 1, 1);
-
-	NF_VramSpriteGfx(0, 2, 2, false);
-	NF_VramSpritePal(0, 2, 2);
-
-	NF_VramSpriteGfx(0, 3, 3, false);
-	NF_VramSpritePal(0, 3, 3);
-
-	NF_VramSpriteGfx(0, 4, 4, false);
-	NF_VramSpritePal(0, 4, 4);
-
-	NF_VramSpriteGfx(0, 6, 6, false);
-	NF_VramSpritePal(0, 6, 6);
-
-	NF_VramSpriteGfx(0, 7, 7, false);
-	NF_VramSpritePal(0, 7, 7);
 
 	//touch screen
 	NF_VramSpriteGfx(1, 5, 0, false);
@@ -182,6 +184,7 @@ void init(void)
 	//----
 
 	NF_CreateTextLayer16(0, 0, 0, "font");
+
 	NF_CreateTextLayer16(1, 0, 0, "font");
 	NF_CreateTiledBg(0, 2, "item_layer"); //items and sinkholes layer
 
@@ -191,6 +194,7 @@ void init(void)
 	NF_CreateTiledBg(0, map_layer, "map0");
 
 }
+
 
 void save()
 {
@@ -223,7 +227,7 @@ void render(void)
 		NF_ClearTextLayer16(1, text_layer);
 
 		//display score
-		sprintf(player.score_str, "Score:%lli", player.score);
+		sprintf(player.score_str, "Score:%li", player.score);
 		NF_WriteText16(1, text_layer, 3, 1, player.score_str);
 
 		//display bridges
@@ -380,7 +384,6 @@ void update_current_time()
 void create_sprite(u8 screen, u8 index, u8 asset, u8 mode)
 {
 	//mode 0 -> enemy  |  mode 1 -> player
-
 	NF_CreateSprite(screen, index, asset, asset, 0, 0);
 	NF_EnableSpriteRotScale(screen, index, index, true); //using index for arg. 3 so that they have separate rotations
 
@@ -599,6 +602,21 @@ void spawn_enemy(u8 enemy_type, s8 direction_, s16 enemy_x_, s16 enemy_y_)
 		NF_MoveSprite(0, total_enemies, shadow_enemies.enemy_x[shadow_enemies.group_members], shadow_enemies.enemy_y[shadow_enemies.group_members]);
 
 	}
+	else if (enemy_type == 3)
+	{	
+
+		phantom_enemies.group_members++;
+
+		phantom_enemies.enemy_id[phantom_enemies.group_members] = total_enemies;
+
+		phantom_enemies.enemy_x[phantom_enemies.group_members] = enemy_x_ * 16 + 8 + x_offset;
+		phantom_enemies.enemy_y[phantom_enemies.group_members] = enemy_y_ * 16 + 8;
+
+		create_sprite(0, total_enemies, 8, 0);
+
+		NF_MoveSprite(0, total_enemies, phantom_enemies.enemy_x[phantom_enemies.group_members], phantom_enemies.enemy_y[phantom_enemies.group_members]);
+
+	}
 }
 
 void update_enemy_scroll()
@@ -719,7 +737,46 @@ void update_snow_ball_enemy(u8 enemy_)
 	}
 
 	ball_enemies.enemy_x[enemy_] = inworld(ball_enemies.enemy_x[enemy_]);
-	NF_MoveSprite(0, ball_enemies.enemy_id[enemy_], ball_enemies.enemy_x[enemy_], ball_enemies.enemy_y[enemy_]);
+	NF_MoveSprite(0, ball_enemies.enemy_id[enemy_ b],all_enemies.enemy_x[enemy_], ball_enemies.enemy_y[enemy_]);
+}
+
+void update_phantom_enemy(u8 enemy_)
+{
+
+	
+	if ((phantom_enemies.can_spawn[enemy_] == false)&&(frame_in_sec%3==0))
+	{
+
+		if (player.player_x > phantom_enemies.enemy_x[enemy_])
+		{
+			phantom_enemies.enemy_x[enemy_] += 1;
+		}
+		if (player.player_x < phantom_enemies.enemy_x[enemy_])
+		{
+			phantom_enemies.enemy_x[enemy_] -= 1;
+		}
+		if (player.player_y > phantom_enemies.enemy_y[enemy_])
+		{
+			phantom_enemies.enemy_y[enemy_] += 1;
+		}
+		if (player.player_y < phantom_enemies.enemy_y[enemy_])
+		{
+			phantom_enemies.enemy_y[enemy_] -= 1;
+		}
+	}
+
+	//animation
+	if (phantom_enemies.anim_delay <= current_msec)
+	{
+		phantom_enemies.current_frame++;
+		if (phantom_enemies.current_frame >= 6)
+			phantom_enemies.current_frame = 0;
+		phantom_enemies.anim_delay = current_msec + 142;
+	}
+	NF_SpriteFrame(0, phantom_enemies.enemy_id[enemy_], phantom_enemies.current_frame);
+
+	phantom_enemies.enemy_x[enemy_] = inworld(phantom_enemies.enemy_x[enemy_]);
+	NF_MoveSprite(0, phantom_enemies.enemy_id[enemy_], phantom_enemies.enemy_x[enemy_], phantom_enemies.enemy_y[enemy_]);
 }
 
 void update_snow_enemy(u8 enemy_)
@@ -740,6 +797,8 @@ void update_snow_enemy(u8 enemy_)
 		make_16x16_tile(0,0, item_layer, even(snow_enemies.enemy_x[enemy_] / 8 + scroll_x / 8 + 1), even(snow_enemies.enemy_y[enemy_] / 8) + 4, 1);
 	}
 }
+
+
 
 void update_shadow_enemy(u8 enemy_)
 {
@@ -805,7 +864,7 @@ void get_enemy_collision()
 {
 	//update enemies here
 	update_enemy_scroll();
-	if ((car_enemies_used == true)||(phantom_enemies_used==true))
+	if (car_enemies_used == true)
 	{
 		for (u8 enemy_index = 1; enemy_index <= car_enemies.group_members; enemy_index++) //start from 1 bc 0 is for player
 		{
@@ -848,6 +907,18 @@ void get_enemy_collision()
 				{
 					player.player_state = 1;
 				}
+			}
+		}
+	}
+	if (phantom_enemies_used == true)
+	{
+		for (u8 enemy_index = 1; enemy_index <= phantom_enemies.group_members; enemy_index++) //start from 1 bc 0 is for player
+		{
+			update_phantom_enemy(enemy_index);
+
+			if (sprites_collide(player.player_x, player.player_y,  phantom_enemies.enemy_x[enemy_index],  phantom_enemies.enemy_y[enemy_index], 10, 10, 3, 3, 1, 1) == true)
+			{
+				player.player_state = 1;
 			}
 		}
 	}
@@ -920,7 +991,7 @@ void spawn_enemies()
 			}
 		}
 	}
-	if (snow_enemies_used == true)
+	if ((snow_enemies_used == true)||(phantom_enemies_used==true))
 	{
 
 		while (enemy < 4)
@@ -930,7 +1001,14 @@ void spawn_enemies()
 
 			if (illegal_position[rnd_[1] + 1][rnd_[0] + 1] == false)
 			{
-				spawn_enemy(1, 0, rnd_[1], rnd_[0]);
+				if (snow_enemies_used==true)
+				{
+					spawn_enemy(1, 0, rnd_[1], rnd_[0]);
+				}
+				else if (phantom_enemies_used==true)
+				{
+					spawn_enemy(3, 0, rnd_[1], rnd_[0]);
+				}
 
 				illegal_position[rnd_[1] + 1][rnd_[0] + 1] = true;
 				illegal_position[rnd_[1] - 1 + 1][rnd_[0] + 1] = true;
@@ -953,9 +1031,6 @@ void spawn_enemies()
 			enemy++;
 		}
 	}
-	/*if(phantom_enemies_used==true){
-		spawn_enemy(3,0,5,5);
-	}*/
 }
 
 void clear_enemies()
@@ -1144,6 +1219,7 @@ void reset_enemies()
 	ball_enemies = empty_group;
 	fire_enemies = empty_group;
 	shadow_enemies = empty_group;
+	phantom_enemies = empty_group;
 	//re-SET the gen enemy data
 	switch (level)
 	{
@@ -1364,7 +1440,7 @@ void title_menu(){
 	swiWaitForVBlank();
 	NF_CreateTiledBg(0,menu_layer,"clear_screen");
 
-	set_sprites_out(0);
+	//set_sprites_out(0);
 
 	NF_CreateTiledBg(0,map_layer,"map0");
 	NF_CreateTiledBg(1,map_layer,"map0");
@@ -1639,6 +1715,7 @@ void game_over()
 	NF_CreateTiledBg(0, menu_layer, "game_over");
 	NF_CreateTiledBg(1, menu_layer, "game_over_touch");
 	render();
+
 	//display score
 	NF_ClearTextLayer16(0, text_layer);
 	NF_WriteText16(0, text_layer, 5, 5, player.score_str);
@@ -1668,7 +1745,7 @@ void game_over()
 int main(int argc, char **argv)
 {
 	init();
-	load();
+	//load();
 	title_menu();
 	while (1)
 	{

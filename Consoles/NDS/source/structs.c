@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 struct SaveStruct{
-	u32 total_score;
-	u32 hi_scores[20];
+	u8 total_score;
+	u8 hi_scores[20];
 };
 
 struct Player
