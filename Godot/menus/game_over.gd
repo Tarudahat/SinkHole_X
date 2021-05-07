@@ -9,6 +9,7 @@ onready var max_total_score
 onready var new_level=false
 
 func _ready():
+	AudioPlayer.get_node("game_over_sfx").play()
 	max_total_score=SceneGlobals.player_score+SceneGlobals.total_score
 
 	for i_ in range(len(SceneGlobals.levels)):

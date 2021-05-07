@@ -42,7 +42,7 @@ func _process(_delta):
 				Customizer.using_music=i
 			i+=1
 		
-		Customizer.using_sound_fx=$TextureRect/ScrollContainer/TextureRect/sound_fx.on_off_list[0]
+		Customizer.using_sound_fx=$TextureRect/ScrollContainer/TextureRect/sound_fx.pressed
 		
 		#warning-ignore:return_value_discarded
 		get_tree().change_scene("res://game.tscn")

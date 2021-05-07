@@ -15,10 +15,12 @@ func _input(event):
 	if ($button_left.pressed==true and (event is InputEventMouseButton )) or (Input.is_action_just_released("in_left")==true) :
 		selected_item-=1
 		change_detected=true
+		AudioPlayer.get_node("select_sfx").play()
 
 	elif ($button_right.pressed==true and (event is InputEventMouseButton)) or (Input.is_action_just_released("in_right")==true) :
 		selected_item+=1
 		change_detected=true
+		AudioPlayer.get_node("select_sfx").play()
 	
 	#Loop when overflow
 	if selected_item<0:

@@ -7,6 +7,7 @@ onready var selected_level=0
 onready var done = false
 
 func _ready():
+	AudioServer.set_bus_mute(AudioServer.get_bus_index("sfx"), false)
 	SceneGlobals.save_game()
 	$background/arrow_buttons.input_array=SceneGlobals.levels
 	Customizer.using=false

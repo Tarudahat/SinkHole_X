@@ -318,6 +318,7 @@ func update_fire_enemy(enemy_):
 	if enemy_.linked_node.position.y-16>=enemy_.position.y:
 		enemy_.position.y+=1*difficulty
 	else:
+		AudioPlayer.get_node("boom_sfx").play()
 		enemy_.linked_node.can_spawn=true
 		update_fire_target(enemy_.linked_node)
 		
@@ -333,6 +334,7 @@ func update_ghost_enemy(enemy_):
 
 	if enemy_.moves<=OS.get_system_time_msecs():
 		if enemy_.get_child(0).get_animation()=="default":
+			AudioPlayer.get_node("ehe_sfx").play()
 			enemy_.get_child(0).play("poofo")
 			enemy_.moves=OS.get_system_time_msecs()+220
 		else:
@@ -377,6 +379,7 @@ func get_colider(map_):
 		
 
 func replace_item(map_,index_,index_2):
+	AudioPlayer.get_node("power_up_sfx").play()
 	if map_.get_cell((player.position.x-18)/64,(player.position.y-16)/64)==index_:
 		map_.set_cell((player.position.x-18)/64,(player.position.y-16)/64, index_2)
 	elif map_.get_cell((player.position.x-18)/64,(player.position.y+18)/64)==index_:
@@ -519,6 +522,9 @@ func _ready():
 	
 func gen_map(map_index):
 	if Customizer.using==true:
+		print(Customizer.using_sound_fx)
+		if Customizer.using_sound_fx==false:
+			AudioServer.set_bus_mute(AudioServer.get_bus_index("sfx"), true)
 		map_index=Customizer.level_base
 
 	enemy_used[0]=true

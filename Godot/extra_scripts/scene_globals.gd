@@ -3,6 +3,8 @@ extends Node2D
 onready var level =-1
 onready var difficulty =-1
 
+onready var digitale_joystick_vector=Vector2(0,0)
+
 onready var return_where=0
 
 onready var added_score=0

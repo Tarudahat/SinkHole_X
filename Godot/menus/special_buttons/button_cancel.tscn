@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/font.tres" type="DynamicFont" id=1]
+[ext_resource path="res://menus/special_buttons/button_cancel.gd" type="Script" id=2]
 
 [sub_resource type="StyleBoxEmpty" id=1]
 
@@ -17,6 +18,7 @@ custom_styles/focus = SubResource( 2 )
 custom_fonts/font = ExtResource( 1 )
 text = "Back"
 flat = true
+script = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false
 }

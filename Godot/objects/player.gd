@@ -40,3 +40,4 @@ func _process(_delta):
 		self.position.y=12*64
 
 	player_collision=move_and_collide(Vector2(player_x,player_y).normalized()*(3.2*speed))
+	

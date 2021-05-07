@@ -12,8 +12,10 @@ func _input(_event):
 		#selecting
 		if Input.is_action_pressed("ui_up"):
 			selected_button-=1
+			AudioPlayer.get_node("select_sfx").play()
 		elif Input.is_action_pressed("ui_down"):
 			selected_button+=1
+			AudioPlayer.get_node("select_sfx").play()
 		#cap 
 		if selected_button>=2:
 			selected_button=0
@@ -28,6 +30,7 @@ func _input(_event):
 
 		#accepting input for the buttons
 		if selected_button==1 and (button_quit.pressed==true or Input.is_action_just_pressed("in_accept")):
+			AudioPlayer.get_node("cancel_sfx").play()
 			get_tree().paused=false
 			# warning-ignore:return_value_discarded
 			get_tree().change_scene("res://menus/title_menu.tscn")

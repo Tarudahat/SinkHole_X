@@ -1,0 +1,42 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://assets/audio/sfx/Blip_Select.wav" type="AudioStream" id=1]
+[ext_resource path="res://assets/audio/sfx/powerup.wav" type="AudioStream" id=2]
+[ext_resource path="res://assets/audio/sfx/dumputu.wav" type="AudioStream" id=3]
+[ext_resource path="res://assets/audio/sfx/select.wav" type="AudioStream" id=4]
+[ext_resource path="res://assets/audio/sfx/boom.wav" type="AudioStream" id=5]
+[ext_resource path="res://assets/audio/sfx/ehe.wav" type="AudioStream" id=6]
+
+[node name="sound_effects" type="Node"]
+
+[node name="cancel_sfx" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 1 )
+volume_db = -30.0
+pitch_scale = 0.5
+bus = "sfx"
+
+[node name="power_up_sfx" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 2 )
+volume_db = -15.0
+bus = "sfx"
+
+[node name="select_sfx" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 4 )
+volume_db = -20.0
+bus = "sfx"
+
+[node name="boom_sfx" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 5 )
+volume_db = -35.0
+bus = "sfx"
+
+[node name="game_over_sfx" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 3 )
+volume_db = -8.0
+bus = "sfx"
+
+[node name="ehe_sfx" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 6 )
+volume_db = -30.0
+pitch_scale = 1.5
+bus = "sfx"

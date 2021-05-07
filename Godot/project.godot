@@ -30,6 +30,7 @@ FullscreenToggle="*res://extra_scripts/fullscreen_toggle.gd"
 SwitchTimer="*res://extra_scripts/switch_timer.gd"
 SceneGlobals="*res://extra_scripts/scene_globals.gd"
 Customizer="*res://extra_scripts/custom_lvl_data.gd"
+AudioPlayer="*res://extra_scripts/sounds.tscn"
 
 [display]
 

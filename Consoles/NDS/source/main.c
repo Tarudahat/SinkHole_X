@@ -94,7 +94,7 @@ void init(void)
 	//Sprites							|->the img
 	//					name     , ram-slot  , w, h
 	//top-screen
-	
+
 	NF_LoadSpriteGfx("sprites/car_enemy", 1, 16, 16);
 	NF_VramSpriteGfx(0, 1, 1, false);
 	NF_LoadSpritePal("sprites/car_enemy", 1);
@@ -148,9 +148,11 @@ void init(void)
 	NF_VramSpriteGfx(1, 5, 0, false);
 	NF_VramSpritePal(1, 5, 0);
 	//BG
-
+	
 	NF_LoadTiledBg("BG/layer_2", "item_layer", 512, 256);
 	NF_LoadTiledBg("BG/map0", "map0", 512, 256);
+
+	/*
 	NF_LoadTiledBg("BG/map1", "map1", 512, 256);
 	NF_LoadTiledBg("BG/map2", "map2", 512, 256);
 	NF_LoadTiledBg("BG/map3", "map3", 512, 256);
@@ -178,6 +180,7 @@ void init(void)
 	NF_LoadTiledBg("menu/pause_menu", "pause_menu", 256, 256);
 	NF_LoadTiledBg("menu/game_over_touch", "game_over_touch", 256, 256);
 	NF_LoadTiledBg("menu/main_menu_touch", "main_menu_touch", 256, 256);
+*/
 
 	//font
 	NF_LoadTextFont16("font/font16", "font", 256, 256, 0);
@@ -190,11 +193,28 @@ void init(void)
 
 	//create tilemaps so they can be used
 
-
 	NF_CreateTiledBg(0, map_layer, "map0");
 
 }
 
+void create_tiled_bg(u8 screen, u8 layer,const char* root ,const char* map)
+{
+	NF_UnloadTiledBg("item_layer");
+ 
+	swiWaitForVBlank();
+	NF_UpdateVramMap(0, item_layer);
+	NF_UpdateVramMap(0, map_layer);
+	NF_UpdateVramMap(0, menu_layer);
+	swiWaitForVBlank();
+	char file_name[25];
+
+	strcpy(file_name,root);
+	strcat(file_name, map);
+
+	NF_LoadTiledBg(file_name, map, 256, 256);
+	NF_CreateTiledBg(screen, layer, map);
+
+} 
 
 void save()
 {
@@ -253,7 +273,6 @@ void render(void)
 	oamUpdate(&oamMain);
 	oamUpdate(&oamSub);
 }
-
 int get_player_tile(u8 layer)
 {
 
@@ -737,7 +756,7 @@ void update_snow_ball_enemy(u8 enemy_)
 	}
 
 	ball_enemies.enemy_x[enemy_] = inworld(ball_enemies.enemy_x[enemy_]);
-	NF_MoveSprite(0, ball_enemies.enemy_id[enemy_ b],all_enemies.enemy_x[enemy_], ball_enemies.enemy_y[enemy_]);
+	NF_MoveSprite(0, ball_enemies.enemy_id[enemy_], ball_enemies.enemy_x[enemy_], ball_enemies.enemy_y[enemy_]);
 }
 
 void update_phantom_enemy(u8 enemy_)
@@ -1057,7 +1076,8 @@ void clear_map(u8 layer, u16 tile, u8 mode)
 		}
 		break;
 	case 1:
-		NF_CreateTiledBg(0, layer, "clear_screen");
+		create_tiled_bg(0,layer,"menu/","clear_screen");
+		//NF_CreateTiledBg(0, layer, "clear_screen");
 		break;
 	case 2:
 		for (u8 x = 0; x < 40; x += 1)
@@ -1143,7 +1163,8 @@ void gen_map(u8 map_index)
 	char map_name[10];
 	sprintf(map_name, "map%i", level);
 
-	NF_CreateTiledBg(0, map_layer, map_name); //map layer
+	create_tiled_bg(0, map_layer,"BG/", map_name);
+	//NF_CreateTiledBg(0, map_layer, map_name); //map layer
 
 	if (map_index == 0)
 	{
@@ -1334,8 +1355,11 @@ bool cursor_menu(char* menu_img_top ,char* menu_img_bottom, bool pause_mode)
 
 	NF_ClearTextLayer16(1, text_layer);
 	NF_UpdateTextLayers();
-	NF_CreateTiledBg(0, menu_layer, menu_img_top);
-	NF_CreateTiledBg(1, menu_layer, menu_img_bottom);
+	/*NF_CreateTiledBg(0, menu_layer, menu_img_top);
+	NF_CreateTiledBg(1, menu_layer, menu_img_bottom);*/
+
+	create_tiled_bg(0,menu_layer, "menu/",menu_img_top);
+	create_tiled_bg(1, menu_layer, "menu/",menu_img_bottom);
 	create_sprite(1, 0, 0, 0);
 	NF_SpriteLayer(1, 0, 0); //make it so that the sprite displays in front on the menu
 	NF_SpriteRotScale(1, 0, 0, 388, 358);
@@ -1419,8 +1443,10 @@ bool cursor_menu(char* menu_img_top ,char* menu_img_bottom, bool pause_mode)
 	}
 
 	NF_DeleteSprite(1,0);
-	NF_CreateTiledBg(0,menu_layer,"clear_screen");
-	NF_CreateTiledBg(1,menu_layer,"game_touch");
+	create_tiled_bg(0,menu_layer,"menu/","clear_screen");
+	create_tiled_bg(1,menu_layer,"menu/","game_touch");
+	/*NF_CreateTiledBg(0,menu_layer,"clear_screen");
+	NF_CreateTiledBg(1,menu_layer,"game_touch");*/
 
 	touch_text_render=true;
 	
@@ -1438,19 +1464,23 @@ void title_menu(){
 	//-title menu-
 	//fancy grass stuff
 	swiWaitForVBlank();
-	NF_CreateTiledBg(0,menu_layer,"clear_screen");
+	create_tiled_bg(0,menu_layer,"menu/","clear_screen");
+	//NF_CreateTiledBg(0,menu_layer,"clear_screen");
 
 	//set_sprites_out(0);
 
-	NF_CreateTiledBg(0,map_layer,"map0");
-	NF_CreateTiledBg(1,map_layer,"map0");
+	create_tiled_bg(0,map_layer,"BG/","map0");
+	create_tiled_bg(1,map_layer,"BG/","map0");
+	/*NF_CreateTiledBg(0,map_layer,"map0");
+	NF_CreateTiledBg(1,map_layer,"map0");*/
 	clear_map(item_layer,0,2);
 	clear_map(map_layer,1,0);
 	add_object(0,map_layer,"grass");
 
 	render();
 
-	NF_CreateTiledBg(1,map_layer,"map0");
+	create_tiled_bg(1,map_layer,"BG/","map0");
+	//NF_CreateTiledBg(1,map_layer,"map0");
 	NF_ScrollBg(1,map_layer,64,0);
 	render();
 

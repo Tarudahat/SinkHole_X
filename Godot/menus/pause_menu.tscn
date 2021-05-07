@@ -33,7 +33,6 @@ font_data = ExtResource( 2 )
 
 [node name="Popup" type="Popup"]
 pause_mode = 2
-visible = true
 margin_right = 24.0
 margin_bottom = 24.0
 theme = SubResource( 2 )
