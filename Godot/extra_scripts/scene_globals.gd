@@ -11,7 +11,7 @@ onready var added_score=0
 onready var player_score=0
 
 onready var levels=["Plains","Highway","Snow field","Volcano","Phantom field","Random","Custom"]
-onready var prices=[0,150000,300000,450000,600000,150000 ,1000000]
+onready var prices=[0,100000,200000,300000,450000,100000,750000]
 
 #vvv these need to be saved vvv
 onready var total_score=0

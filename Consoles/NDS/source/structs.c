@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 struct SaveStruct{
-	u8 total_score;
-	u8 hi_scores[20];
+	u32 total_score;
+	u32 hi_scores[20];
 };
 
 struct Player
@@ -41,4 +41,5 @@ struct enemy_group
     s16 target_y[20];
     bool can_spawn[20];
     u8 moves[20];
+    u32 respawn_timer[20];
 };

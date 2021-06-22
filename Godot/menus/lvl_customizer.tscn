@@ -285,7 +285,7 @@ margin_top = 360.0
 margin_right = 393.0
 margin_bottom = 432.0
 pressed = false
-text = "Phantom Field Theme:"
+text = "Phantom field Theme:"
 toggle_type = 1
 
 [node name="BGM6" parent="TextureRect/ScrollContainer/TextureRect/music" instance=ExtResource( 10 )]
@@ -318,7 +318,7 @@ margin_left = 48.0
 margin_top = 144.0
 margin_right = 338.0
 margin_bottom = 216.0
-text = "normal:"
+text = "Normal:"
 toggle_type = 1
 
 [node name="hard" parent="TextureRect/ScrollContainer/TextureRect/difficulty" instance=ExtResource( 10 )]
@@ -335,7 +335,7 @@ margin_top = 288.0
 margin_right = 438.0
 margin_bottom = 360.0
 pressed = false
-text = "impossible:"
+text = "Impossible:"
 toggle_type = 1
 
 [node name="button_cancel" parent="TextureRect/ScrollContainer/TextureRect" instance=ExtResource( 11 )]
